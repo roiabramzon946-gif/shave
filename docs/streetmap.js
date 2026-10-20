@@ -77,12 +77,23 @@
       var hl = opts.highlight && geo.streets[opts.highlight];
       if (hl) {
         var group = [];
+        var label = "<b>" + esc(opts.highlight) + "</b>" + (prices[opts.highlight] ? "<br>" + money(prices[opts.highlight]) + ' למ"ר' : "");
         hl.forEach(function (line) {
           group.push(L.polyline(line, { color: "#17212b", weight: 10, opacity: 0.9 }).addTo(map));
           group.push(L.polyline(line, { color: "#ffffff", weight: 4, opacity: 1 }).addTo(map)
-            .bindTooltip("<b>" + esc(opts.highlight) + "</b>" + (prices[opts.highlight] ? "<br>" + money(prices[opts.highlight]) + ' למ"ר' : ""),
-                         { permanent: true, direction: "top", className: "shave-hl" }));
+            .bindTooltip(label, { sticky: true, direction: "top" }));
         });
+        // one label for the whole street (a street is made of many short pieces on the map),
+        // placed in the middle of its longest piece
+        var longest = hl.reduce(function (best, line) {
+          var len = 0;
+          for (var i = 1; i < line.length; i++) len += Math.hypot(line[i][0] - line[i - 1][0], line[i][1] - line[i - 1][1]);
+          return len > best.len ? { len: len, line: line } : best;
+        }, { len: -1, line: hl[0] }).line;
+        L.tooltip({ permanent: true, direction: "top", className: "shave-hl", offset: [0, -6] })
+          .setLatLng(longest[Math.floor(longest.length / 2)])
+          .setContent(label)
+          .addTo(map);
         map.fitBounds(L.featureGroup(group).getBounds(), { padding: [40, 40], maxZoom: 16 });
       } else {
         map.fitBounds(geo.bounds, { padding: [10, 10] });
