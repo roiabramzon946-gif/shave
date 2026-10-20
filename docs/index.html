@@ -3,8 +3,44 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>שווה?</title>
-<meta name="description" content="בודקים אם המחיר המבוקש לדירה הוגן, לפי עסקאות אמת שנרשמו ברשות המסים.">
+<title>שווה? בדיקת מחיר דירה לפי עסקאות נדל"ן אמת</title>
+<meta name="description" content="בדיקת מחיר דירה בחינם: מזינים עיר, רחוב, שטח ומחיר מבוקש ומקבלים שווי משוער, טווח מחירים ועסקאות דומות ברחוב, לפי כ־580 אלף עסקאות שנרשמו ברשות המסים.">
+<link rel="canonical" href="https://roiabramzon946-gif.github.io/shave/">
+<meta name="robots" content="index, follow">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="he_IL">
+<meta property="og:site_name" content="שווה?">
+<meta property="og:title" content="שווה? בדיקת מחיר דירה לפי עסקאות נדל&quot;ן אמת">
+<meta property="og:description" content="האם המחיר המבוקש לדירה הוגן? שווי משוער ועסקאות דומות ברחוב, לפי עסקאות רשות המסים ומדד מחירי הדירות של הלמ&quot;ס.">
+<meta property="og:url" content="https://roiabramzon946-gif.github.io/shave/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%232b4c7e'/%3E%3Ctext x='16' y='23' font-size='20' text-anchor='middle' fill='white' font-family='Arial'%3E%E2%82%AA%3C/text%3E%3C/svg%3E">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "שווה?",
+  "url": "https://roiabramzon946-gif.github.io/shave/",
+  "inLanguage": "he",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "description": "בדיקה אם המחיר המבוקש לדירה בישראל הוגן, לפי עסקאות נדל\"ן שנרשמו ברשות המסים ומדד מחירי הדירות של הלמ\"ס.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "ILS" }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "איך יודעים אם מחיר דירה הוגן?",
+      "acceptedAnswer": { "@type": "Answer", "text": "משווים אותו למחירים שבהם נמכרו דירות דומות באותו רחוב ובאותה עיר. האתר עושה את זה אוטומטית לפי עסקאות אמת שנרשמו ברשות המסים, ומתאים את המחירים להיום לפי מדד מחירי הדירות של הלמ\"ס." } },
+    { "@type": "Question", "name": "מאיפה הנתונים?",
+      "acceptedAnswer": { "@type": "Answer", "text": "ממאגר עסקאות הנדל\"ן הפתוח של רשות המסים, כ־580 אלף עסקאות דירה ב־119 ערים, ומדד מחירי הדירות של הלשכה המרכזית לסטטיסטיקה לפי מחוז." } },
+    { "@type": "Question", "name": "כמה ההערכה מדויקת?",
+      "acceptedAnswer": { "@type": "Answer", "text": "בבדיקה על עסקאות שהמודל לא ראה, הטעות החציונית היא כ־9%, ו־81% מההערכות היו בטווח של 20% מהמחיר שבאמת שולם. זו הערכה סטטיסטית ולא שמאות." } }
+  ]
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Hebrew:wght@400;500;600&family=IBM+Plex+Mono:wght@500&family=Suez+One&display=swap">
@@ -118,6 +154,10 @@ td.n { font-family: var(--num); font-variant-numeric: tabular-nums; direction: l
 .cta p { margin: 0; flex: 1 1 280px; }
 a.button { font-weight: 600; color: var(--accent); border: 1.5px solid var(--accent); border-radius: 6px; padding: 10px 18px; text-decoration: none; }
 
+.about { display: grid; gap: 8px; max-width: 70ch; padding-top: 8px; }
+.about h2 { font: 600 1.15rem var(--body); margin: 0; text-wrap: balance; }
+.about h3 { font: 600 .98rem var(--body); margin: 8px 0 0; }
+.about p { margin: 0; color: var(--ink); }
 footer { color: var(--muted); font-size: .82rem; display: grid; gap: 6px; }
 footer p { margin: 0; max-width: 75ch; }
 .error { color: var(--bad); font-weight: 500; }
@@ -216,6 +256,15 @@ input.invalid { border-color: var(--bad); background: var(--bad-soft); }
       <p><strong>רוצים דוח מלא?</strong> כל העסקאות ברחוב, מגמת מחירים בשכונה וטיעונים מוכנים למשא ומתן, בקובץ PDF.</p>
       <a class="button" id="ctaLink" href="#" target="_blank" rel="noopener">להזמנת דוח</a>
     </div>
+  </section>
+
+  <section class="about" aria-labelledby="aboutTitle">
+    <h2 id="aboutTitle">איך יודעים אם מחיר דירה הוגן?</h2>
+    <p>הדרך הכי טובה היא להשוות למחירים שבהם נמכרו דירות דומות באותו רחוב. שווה? עושה את זה בשבילכם: הוא מחשב שווי משוער לדירה לפי עסקאות אמת שנרשמו ברשות המסים, ומציג את העסקאות הדומות שנסגרו ברחוב.</p>
+    <h3>מה נלקח בחשבון</h3>
+    <p>העיר והרחוב, השטח במ"ר, הקומה ומספר הקומות בבניין, שנת הבנייה, סוג הדירה (דירת גן, גג או דופלקס), ואם הדירה חדשה מקבלן, מוכנה לכניסה או על הנייר. המחירים מעודכנים להיום לפי מדד מחירי הדירות של הלמ"ס במחוז של כל עיר.</p>
+    <h3>מאיפה הנתונים</h3>
+    <p>כ־580 אלף עסקאות דירה ב־119 ערים, ממאגר עסקאות הנדל"ן הפתוח של רשות המסים, ומדד מחירי הדירות של הלשכה המרכזית לסטטיסטיקה. השימוש באתר חינמי ולא דורש הרשמה.</p>
   </section>
 
   <footer>
