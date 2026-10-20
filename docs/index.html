@@ -159,6 +159,8 @@ a.button { font-weight: 600; color: var(--accent); border: 1.5px solid var(--acc
 .about h2 { font: 600 1.15rem var(--body); margin: 0; text-wrap: balance; }
 .about h3 { font: 600 .98rem var(--body); margin: 8px 0 0; }
 .about p { margin: 0; color: var(--ink); }
+.city-links { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: .92rem; }
+.city-links a { color: var(--accent); }
 footer { color: var(--muted); font-size: .82rem; display: grid; gap: 6px; }
 footer p { margin: 0; max-width: 75ch; }
 .error { color: var(--bad); font-weight: 500; }
@@ -266,6 +268,8 @@ input.invalid { border-color: var(--bad); background: var(--bad-soft); }
     <p>העיר והרחוב, השטח במ"ר, הקומה ומספר הקומות בבניין, שנת הבנייה, סוג הדירה (דירת גן, גג או דופלקס), ואם הדירה חדשה מקבלן, מוכנה לכניסה או על הנייר. המחירים מעודכנים להיום לפי מדד מחירי הדירות של הלמ"ס במחוז של כל עיר.</p>
     <h3>מאיפה הנתונים</h3>
     <p>כ־580 אלף עסקאות דירה ב־119 ערים, ממאגר עסקאות הנדל"ן הפתוח של רשות המסים, ומדד מחירי הדירות של הלשכה המרכזית לסטטיסטיקה. השימוש באתר חינמי ולא דורש הרשמה.</p>
+    <h3>מחירי דירות לפי עיר</h3>
+    <!--CITY_LINKS--><ul class="city-links"><li><a href="city/תל-אביב-יפו.html">מחירי דירות בתל אביב-יפו</a></li><li><a href="city/ירושלים.html">מחירי דירות בירושלים</a></li><li><a href="city/חיפה.html">מחירי דירות בחיפה</a></li><li><a href="city/אשדוד.html">מחירי דירות באשדוד</a></li><li><a href="city/באר-שבע.html">מחירי דירות בבאר שבע</a></li><li><a href="city/פתח-תקווה.html">מחירי דירות בפתח תקווה</a></li><li><a href="city/ראשון-לציון.html">מחירי דירות בראשון לציון</a></li><li><a href="city/בת-ים.html">מחירי דירות בבת ים</a></li><li><a href="city/נתניה.html">מחירי דירות בנתניה</a></li><li><a href="city/חולון.html">מחירי דירות בחולון</a></li><li><a href="city/רמת-גן.html">מחירי דירות ברמת גן</a></li><li><a href="city/אשקלון.html">מחירי דירות באשקלון</a></li><li><a href="city/בני-ברק.html">מחירי דירות בבני ברק</a></li><li><a href="city/קריית-אתא.html">מחירי דירות בקריית אתא</a></li><li><a href="city/חדרה.html">מחירי דירות בחדרה</a></li><li><a href="city/ראש-העין.html">מחירי דירות בראש העין</a></li><li><a href="city/כפר-סבא.html">מחירי דירות בכפר סבא</a></li><li><a href="city/הרצלייה.html">מחירי דירות בהרצלייה</a></li><li><a href="city/אילת.html">מחירי דירות באילת</a></li><li><a href="city/בית-שמש.html">מחירי דירות בבית שמש</a></li><li><a href="city/טבריה.html">מחירי דירות בטבריה</a></li><li><a href="city/רחובות.html">מחירי דירות ברחובות</a></li><li><a href="city/נהרייה.html">מחירי דירות בנהרייה</a></li><li><a href="city/עפולה.html">מחירי דירות בעפולה</a></li><li><a href="city/">כל הערים ›</a></li></ul><!--/CITY_LINKS-->
   </section>
 
   <footer>
@@ -476,6 +480,20 @@ async function init() {
   ["floor", "bfloors"].forEach((id) => $(id).addEventListener("input", () => {
     if (!floorProblem() && $("formMsg").classList.contains("error")) { $("formMsg").textContent = ""; }
   }));
+
+  // a city page can link here with ?city=...&street=...
+  let pre = null;
+  try {
+    const qs = new URLSearchParams(location.search);
+    pre = cityByName(qs.get("city"));
+    if (pre) {
+      $("city").value = pre.name;
+      const pc = await getCity(pre); fillStreets(pc);
+      if (qs.get("street") && pc.streets[qs.get("street")]) $("street").value = qs.get("street");
+      $("area").focus();
+      return;
+    }
+  } catch (err) { /* ignore a bad link and show the example */ }
 
   // open in a working state with an example
   const c0 = META.cities[0], city0 = await getCity(c0);

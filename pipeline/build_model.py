@@ -554,6 +554,8 @@ def main():
     report += [f"  {f:14s} {c:+.4f}" for f, c in zip(FEATURES, reg.coef_)]
     (ROOT / "data").mkdir(exist_ok=True)
     (ROOT / "data" / "report.txt").write_text("\n".join(report), encoding="utf-8")
+    import build_city_pages
+    build_city_pages.main()
     print("Done.")
 
 
