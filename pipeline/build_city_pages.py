@@ -151,6 +151,7 @@ border-radius:10px;padding:18px 20px}.cta p{margin:0;flex:1 1 260px}
 .city-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:4px 18px;margin:0;padding:0;list-style:none}
 .city-list li{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--rule);padding:6px 0}
 .note{color:var(--muted);font-size:.85rem;margin:0;max-width:75ch}
+.map{height:440px;border-radius:8px;border:1px solid var(--rule);overflow:hidden}
 footer{color:var(--muted);font-size:.82rem;display:grid;gap:6px}footer p{margin:0;max-width:75ch}
 """
 
@@ -192,7 +193,7 @@ def page(title, description, url, body, jsonld):
 """
 
 
-def city_page(meta, city, slugs, district, peers, gen_date):
+def city_page(meta, city, slugs, district, peers, gen_date, street_index=None):
     name = city["name"]
     url = SITE + "city/" + quote(slugs[name]) + ".html"
     trend = city["trend"]
@@ -251,6 +252,20 @@ def city_page(meta, city, slugs, district, peers, gen_date):
         f'<td class="n">{"קרקע" if r[cols["floor"]] == 0 else ("–" if r[cols["floor"]] is None else r[cols["floor"]])}</td>'
         f'<td class="n">{r[cols["area"]]}</td><td class="n">{ils_exact(r[cols["price"]])}</td>'
         f'<td class="n">{ils_exact(round(r[cols["price"]] / r[cols["area"]], -1))}</td></tr>' for r in deals)
+    map_block = ""
+    entry = (street_index or {}).get(name)
+    if entry:
+        prices = {s: round(std100 * math.exp(v[0])) for s, v in city["streets"].items() if v[1] >= 3}
+        geo_url = "../data/streets/" + quote(entry["file"]) + ".json?v=" + str(meta.get("version", ""))
+        map_block = (f'<div class="sheet"><h2>מפת מחירי הרחובות ב{e(name)}</h2>'
+                     f'<div class="map" id="map" role="img" aria-label="מפת הרחובות ב{e(name)} לפי מחיר למ״ר"></div>'
+                     f'<p class="note">כל רחוב צבוע לפי המחיר המשוער למ"ר לדירה סטנדרטית, מירוק (זול) לאדום (יקר). '
+                     f'העבירו את העכבר על רחוב לפרטים. נתוני המפה: OpenStreetMap.</p></div>'
+                     f'<script src="../streetmap.js?v={e(str(meta.get("version", "")))}"></script>'
+                     f'<script>ShaveMap.draw(document.getElementById("map"), {{geometryUrl: {json.dumps(geo_url)}, '
+                     f'prices: {json.dumps(prices, ensure_ascii=False)}}}).catch(function(){{'
+                     f'document.getElementById("map").parentNode.hidden = true;}});</script>')
+
     deals_block = (f'<div class="sheet"><h2>עסקאות אחרונות ב{e(name)}</h2><div class="table-wrap"><table><thead><tr>'
                    f'<th>כתובת</th><th>תאריך</th><th>קומה</th><th>מ"ר</th><th>מחיר</th><th>למ"ר</th></tr></thead>'
                    f'<tbody>{deal_rows}</tbody></table></div></div>') if deals else ""
@@ -277,6 +292,7 @@ def city_page(meta, city, slugs, district, peers, gen_date):
 <a class="button" href="{checker}">בדיקת מחיר דירה ב{e(name)}</a></div>
 <div class="sheet"><h2>מגמת המחירים ב{e(name)}</h2>{trend_svg(trend)}</div>
 {apt_block}
+{map_block}
 {streets_block}
 {deals_block}
 {peers_block}
@@ -355,6 +371,8 @@ def main():
         slugs[c["name"]] = s
 
     gen_date = datetime.now().strftime("%d/%m/%Y")
+    si_path = DOCS / "data" / "streets" / "index.json"
+    street_index = json.loads(si_path.read_text(encoding="utf-8")) if si_path.exists() else {}
     rows = []
     for c in cities:
         dist = CITY_DISTRICT.get(c["name"], "ארצי")
@@ -363,7 +381,7 @@ def main():
     for c in cities:
         dist = CITY_DISTRICT.get(c["name"], "ארצי")
         peers = [r["name"] for r in sorted(rows, key=lambda r: -r["n"]) if r["district"] == dist and r["name"] != c["name"]][:10]
-        (OUT / f"{slugs[c['name']]}.html").write_text(city_page(meta, c, slugs, dist, peers, gen_date), encoding="utf-8")
+        (OUT / f"{slugs[c['name']]}.html").write_text(city_page(meta, c, slugs, dist, peers, gen_date, street_index), encoding="utf-8")
     (OUT / "index.html").write_text(index_page(meta, rows, slugs, gen_date), encoding="utf-8")
 
     today = datetime.now().strftime("%Y-%m-%d")

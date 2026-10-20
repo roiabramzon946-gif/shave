@@ -1,0 +1,698 @@
+{
+"תל אביב-יפו": {
+"file": "תל-אביב-יפו",
+"matched": 1307,
+"streets": 1340,
+"deal_share": 0.985
+},
+"ירושלים": {
+"file": "ירושלים",
+"matched": 1089,
+"streets": 1140,
+"deal_share": 0.969
+},
+"חיפה": {
+"file": "חיפה",
+"matched": 543,
+"streets": 565,
+"deal_share": 0.982
+},
+"באר שבע": {
+"file": "באר-שבע",
+"matched": 504,
+"streets": 545,
+"deal_share": 0.943
+},
+"פתח תקווה": {
+"file": "פתח-תקווה",
+"matched": 450,
+"streets": 460,
+"deal_share": 0.99
+},
+"אשדוד": {
+"file": "אשדוד",
+"matched": 370,
+"streets": 384,
+"deal_share": 0.986
+},
+"ראשון לציון": {
+"file": "ראשון-לציון",
+"matched": 588,
+"streets": 609,
+"deal_share": 0.967
+},
+"חולון": {
+"file": "חולון",
+"matched": 361,
+"streets": 371,
+"deal_share": 0.988
+},
+"רמת גן": {
+"file": "רמת-גן",
+"matched": 300,
+"streets": 311,
+"deal_share": 0.987
+},
+"בת ים": {
+"file": "בת-ים",
+"matched": 179,
+"streets": 187,
+"deal_share": 0.984
+},
+"אשקלון": {
+"file": "אשקלון",
+"matched": 344,
+"streets": 362,
+"deal_share": 0.984
+},
+"נתניה": {
+"file": "נתניה",
+"matched": 259,
+"streets": 273,
+"deal_share": 0.946
+},
+"בני ברק": {
+"file": "בני-ברק",
+"matched": 308,
+"streets": 315,
+"deal_share": 0.983
+},
+"חדרה": {
+"file": "חדרה",
+"matched": 273,
+"streets": 278,
+"deal_share": 0.991
+},
+"בית שמש": {
+"file": "בית-שמש",
+"matched": 211,
+"streets": 224,
+"deal_share": 0.921
+},
+"קריית אתא": {
+"file": "קריית-אתא",
+"matched": 167,
+"streets": 201,
+"deal_share": 0.946
+},
+"רחובות": {
+"file": "רחובות",
+"matched": 176,
+"streets": 184,
+"deal_share": 0.966
+},
+"הרצלייה": {
+"file": "הרצלייה",
+"matched": 317,
+"streets": 326,
+"deal_share": 0.972
+},
+"כפר סבא": {
+"file": "כפר-סבא",
+"matched": 265,
+"streets": 274,
+"deal_share": 0.983
+},
+"אילת": {
+"file": "אילת",
+"matched": 190,
+"streets": 268,
+"deal_share": 0.878
+},
+"נהרייה": {
+"file": "נהרייה",
+"matched": 136,
+"streets": 141,
+"deal_share": 0.975
+},
+"עפולה": {
+"file": "עפולה",
+"matched": 191,
+"streets": 210,
+"deal_share": 0.935
+},
+"רעננה": {
+"file": "רעננה",
+"matched": 211,
+"streets": 220,
+"deal_share": 0.988
+},
+"קריית גת": {
+"file": "קריית-גת",
+"matched": 168,
+"streets": 188,
+"deal_share": 0.946
+},
+"לוד": {
+"file": "לוד",
+"matched": 172,
+"streets": 177,
+"deal_share": 0.998
+},
+"ראש העין": {
+"file": "ראש-העין",
+"matched": 153,
+"streets": 162,
+"deal_share": 0.995
+},
+"מודיעין-מכבים-רעות": {
+"file": "מודיעין-מכבים-רעות",
+"matched": 108,
+"streets": 122,
+"deal_share": 0.938
+},
+"טבריה": {
+"file": "טבריה",
+"matched": 142,
+"streets": 145,
+"deal_share": 0.968
+},
+"הוד השרון": {
+"file": "הוד-השרון",
+"matched": 177,
+"streets": 185,
+"deal_share": 0.994
+},
+"עכו": {
+"file": "עכו",
+"matched": 155,
+"streets": 162,
+"deal_share": 0.946
+},
+"גבעתיים": {
+"file": "גבעתיים",
+"matched": 96,
+"streets": 98,
+"deal_share": 0.995
+},
+"קריית ים": {
+"file": "קריית-ים",
+"matched": 110,
+"streets": 129,
+"deal_share": 0.906
+},
+"יבנה": {
+"file": "יבנה",
+"matched": 99,
+"streets": 105,
+"deal_share": 0.983
+},
+"מעלה אדומים": {
+"file": "מעלה-אדומים",
+"matched": 61,
+"streets": 83,
+"deal_share": 0.878
+},
+"נס ציונה": {
+"file": "נס-ציונה",
+"matched": 118,
+"streets": 120,
+"deal_share": 0.992
+},
+"קריית אונו": {
+"file": "קריית-אונו",
+"matched": 91,
+"streets": 96,
+"deal_share": 0.994
+},
+"ערד": {
+"file": "ערד",
+"matched": 102,
+"streets": 108,
+"deal_share": 0.973
+},
+"קריית ביאליק": {
+"file": "קריית-ביאליק",
+"matched": 48,
+"streets": 57,
+"deal_share": 0.84
+},
+"רמת השרון": {
+"file": "רמת-השרון",
+"matched": 151,
+"streets": 157,
+"deal_share": 0.984
+},
+"דימונה": {
+"file": "דימונה",
+"matched": 137,
+"streets": 150,
+"deal_share": 0.952
+},
+"מודיעין עילית": {
+"file": "מודיעין-עילית",
+"matched": 29,
+"streets": 29,
+"deal_share": 1.0
+},
+"נשר": {
+"file": "נשר",
+"matched": 72,
+"streets": 76,
+"deal_share": 0.989
+},
+"מגדל העמק": {
+"file": "מגדל-העמק",
+"matched": 86,
+"streets": 93,
+"deal_share": 0.976
+},
+"חריש": {
+"file": "חריש",
+"matched": 26,
+"streets": 26,
+"deal_share": 1.0
+},
+"קריית מלאכי": {
+"file": "קריית-מלאכי",
+"matched": 66,
+"streets": 70,
+"deal_share": 0.973
+},
+"אור יהודה": {
+"file": "אור-יהודה",
+"matched": 82,
+"streets": 90,
+"deal_share": 0.969
+},
+"ביתר עילית": {
+"file": "ביתר-עילית",
+"matched": 52,
+"streets": 53,
+"deal_share": 0.999
+},
+"צפת": {
+"file": "צפת",
+"matched": 82,
+"streets": 88,
+"deal_share": 0.988
+},
+"שדרות": {
+"file": "שדרות",
+"matched": 122,
+"streets": 126,
+"deal_share": 0.976
+},
+"פרדס חנה-כרכור": {
+"file": "פרדס-חנה-כרכור",
+"matched": 128,
+"streets": 136,
+"deal_share": 0.986
+},
+"טירת כרמל": {
+"file": "טירת-כרמל",
+"matched": 44,
+"streets": 51,
+"deal_share": 0.918
+},
+"אופקים": {
+"file": "אופקים",
+"matched": 136,
+"streets": 145,
+"deal_share": 0.95
+},
+"רמלה": {
+"file": "רמלה",
+"matched": 72,
+"streets": 75,
+"deal_share": 0.941
+},
+"כפר יונה": {
+"file": "כפר-יונה",
+"matched": 104,
+"streets": 106,
+"deal_share": 0.997
+},
+"גני תקווה": {
+"file": "גני-תקווה",
+"matched": 32,
+"streets": 34,
+"deal_share": 0.938
+},
+"יהוד-מונוסון": {
+"file": "יהוד-מונוסון",
+"matched": 82,
+"streets": 82,
+"deal_share": 1.0
+},
+"יקנעם עילית": {
+"file": "יקנעם-עילית",
+"matched": 64,
+"streets": 68,
+"deal_share": 0.983
+},
+"קריית שמונה": {
+"file": "קריית-שמונה",
+"matched": 57,
+"streets": 58,
+"deal_share": 0.984
+},
+"נתיבות": {
+"file": "נתיבות",
+"matched": 66,
+"streets": 68,
+"deal_share": 0.995
+},
+"גדרה": {
+"file": "גדרה",
+"matched": 122,
+"streets": 133,
+"deal_share": 0.957
+},
+"שוהם": {
+"file": "שוהם",
+"matched": 32,
+"streets": 38,
+"deal_share": 0.919
+},
+"גבעת שמואל": {
+"file": "גבעת-שמואל",
+"matched": 52,
+"streets": 54,
+"deal_share": 0.936
+},
+"אור עקיבא": {
+"file": "אור-עקיבא",
+"matched": 50,
+"streets": 52,
+"deal_share": 0.897
+},
+"מזכרת בתיה": {
+"file": "מזכרת-בתיה",
+"matched": 62,
+"streets": 66,
+"deal_share": 0.97
+},
+"מעלות-תרשיחא": {
+"file": "מעלות-תרשיחא",
+"matched": 87,
+"streets": 90,
+"deal_share": 0.971
+},
+"בית שאן": {
+"file": "בית-שאן",
+"matched": 75,
+"streets": 80,
+"deal_share": 0.968
+},
+"מבשרת ציון": {
+"file": "מבשרת-ציון",
+"matched": 83,
+"streets": 93,
+"deal_share": 0.938
+},
+"קריית מוצקין": {
+"file": "קריית-מוצקין",
+"matched": 17,
+"streets": 17,
+"deal_share": 1.0
+},
+"צור יצחק": {
+"file": "צור-יצחק",
+"matched": 8,
+"streets": 8,
+"deal_share": 1.0
+},
+"קדימה-צורן": {
+"file": "קדימה-צורן",
+"matched": 87,
+"streets": 99,
+"deal_share": 0.81
+},
+"כרמיאל": {
+"file": "כרמיאל",
+"matched": 36,
+"streets": 39,
+"deal_share": 0.96
+},
+"זכרון יעקב": {
+"file": "זכרון-יעקב",
+"matched": 82,
+"streets": 82,
+"deal_share": 1.0
+},
+"צור הדסה": {
+"file": "צור-הדסה",
+"matched": 41,
+"streets": 47,
+"deal_share": 0.82
+},
+"קרית טבעון": {
+"file": "קרית-טבעון",
+"matched": 58,
+"streets": 67,
+"deal_share": 0.905
+},
+"גבעת זאב": {
+"file": "גבעת-זאב",
+"matched": 45,
+"streets": 46,
+"deal_share": 0.999
+},
+"ירוחם": {
+"file": "ירוחם",
+"matched": 36,
+"streets": 46,
+"deal_share": 0.946
+},
+"אזור": {
+"file": "אזור",
+"matched": 31,
+"streets": 33,
+"deal_share": 0.972
+},
+"חצור הגלילית": {
+"file": "חצור-הגלילית",
+"matched": 22,
+"streets": 27,
+"deal_share": 0.762
+},
+"גן יבנה": {
+"file": "גן-יבנה",
+"matched": 106,
+"streets": 111,
+"deal_share": 0.971
+},
+"בני עי\"ש": {
+"file": "בני-עיש",
+"matched": 22,
+"streets": 25,
+"deal_share": 0.972
+},
+"רמת ישי": {
+"file": "רמת-ישי",
+"matched": 32,
+"streets": 38,
+"deal_share": 0.85
+},
+"קריית עקרון": {
+"file": "קריית-עקרון",
+"matched": 33,
+"streets": 33,
+"deal_share": 1.0
+},
+"שלומי": {
+"file": "שלומי",
+"matched": 25,
+"streets": 25,
+"deal_share": 1.0
+},
+"מצפה רמון": {
+"file": "מצפה-רמון",
+"matched": 25,
+"streets": 28,
+"deal_share": 0.955
+},
+"קצרין": {
+"file": "קצרין",
+"matched": 44,
+"streets": 44,
+"deal_share": 1.0
+},
+"אבן יהודה": {
+"file": "אבן-יהודה",
+"matched": 58,
+"streets": 58,
+"deal_share": 1.0
+},
+"באר יעקב": {
+"file": "באר-יעקב",
+"matched": 3,
+"streets": 3,
+"deal_share": 1.0
+},
+"עתלית": {
+"file": "עתלית",
+"matched": 34,
+"streets": 39,
+"deal_share": 0.883
+},
+"בנימינה-גבעת עדה": {
+"file": "בנימינה-גבעת-עדה",
+"matched": 39,
+"streets": 47,
+"deal_share": 0.89
+},
+"כפר ורדים": {
+"file": "כפר-ורדים",
+"matched": 45,
+"streets": 48,
+"deal_share": 0.956
+},
+"בית דגן": {
+"file": "בית-דגן",
+"matched": 31,
+"streets": 31,
+"deal_share": 1.0
+},
+"קרני שומרון": {
+"file": "קרני-שומרון",
+"matched": 13,
+"streets": 14,
+"deal_share": 0.922
+},
+"נצרת": {
+"file": "נצרת",
+"matched": 9,
+"streets": 13,
+"deal_share": 0.247
+},
+"מוצא עילית": {
+"file": "מוצא-עילית",
+"matched": 7,
+"streets": 8,
+"deal_share": 0.993
+},
+"נחלים": {
+"file": "נחלים",
+"matched": 2,
+"streets": 2,
+"deal_share": 1.0
+},
+"מיתר": {
+"file": "מיתר",
+"matched": 58,
+"streets": 66,
+"deal_share": 0.893
+},
+"קריית ארבע": {
+"file": "קריית-ארבע",
+"matched": 8,
+"streets": 10,
+"deal_share": 0.984
+},
+"אורנית": {
+"file": "אורנית",
+"matched": 12,
+"streets": 14,
+"deal_share": 0.98
+},
+"בית אריה": {
+"file": "בית-אריה",
+"matched": 15,
+"streets": 17,
+"deal_share": 0.97
+},
+"אחוזת ברק": {
+"file": "אחוזת-ברק",
+"matched": 11,
+"streets": 17,
+"deal_share": 0.835
+},
+"עמנואל": {
+"file": "עמנואל",
+"matched": 4,
+"streets": 4,
+"deal_share": 1.0
+},
+"צור משה": {
+"file": "צור-משה",
+"matched": 13,
+"streets": 13,
+"deal_share": 1.0
+},
+"כוכב יאיר": {
+"file": "כוכב-יאיר",
+"matched": 40,
+"streets": 43,
+"deal_share": 0.961
+},
+"עומר": {
+"file": "עומר",
+"matched": 39,
+"streets": 41,
+"deal_share": 0.935
+},
+"כפר האורנים": {
+"file": "כפר-האורנים",
+"matched": 10,
+"streets": 10,
+"deal_share": 1.0
+},
+"פרדסייה": {
+"file": "פרדסייה",
+"matched": 29,
+"streets": 29,
+"deal_share": 1.0
+},
+"נופית": {
+"file": "נופית",
+"matched": 14,
+"streets": 14,
+"deal_share": 1.0
+},
+"להבים": {
+"file": "להבים",
+"matched": 34,
+"streets": 35,
+"deal_share": 0.983
+},
+"גן נר": {
+"file": "גן-נר",
+"matched": 13,
+"streets": 13,
+"deal_share": 1.0
+},
+"בת חפר": {
+"file": "בת-חפר",
+"matched": 24,
+"streets": 24,
+"deal_share": 1.0
+},
+"הר אדר": {
+"file": "הר-אדר",
+"matched": 8,
+"streets": 9,
+"deal_share": 0.98
+},
+"קציר": {
+"file": "קציר",
+"matched": 16,
+"streets": 17,
+"deal_share": 0.8
+},
+"מתן": {
+"file": "מתן",
+"matched": 13,
+"streets": 15,
+"deal_share": 0.875
+},
+"קיסריה": {
+"file": "קיסריה",
+"matched": 12,
+"streets": 13,
+"deal_share": 0.897
+},
+"מנחמיה": {
+"file": "מנחמיה",
+"matched": 10,
+"streets": 12,
+"deal_share": 0.885
+},
+"ראש פינה": {
+"file": "ראש-פינה",
+"matched": 8,
+"streets": 10,
+"deal_share": 0.846
+}
+}

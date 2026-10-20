@@ -15,3 +15,7 @@ data/report.txt
 
 # private notes
 BUSINESS_NOTES.md
+
+# OpenStreetMap downloads (re-downloadable)
+data/osm_cache/
+data/_used_patch.py

@@ -150,6 +150,9 @@ td { border-bottom: 1px solid var(--rule); padding: 7px 8px; white-space: nowrap
 td.n { font-family: var(--num); font-variant-numeric: tabular-nums; direction: ltr; text-align: right; }
 .empty { color: var(--muted); font-size: .92rem; margin: 0; }
 
+.map { height: 380px; border-radius: 8px; border: 1px solid var(--rule); overflow: hidden; }
+.map-wrap { display: grid; gap: 8px; }
+.map-wrap .hint { margin: 0; }
 .cta { display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap;
   border-top: 1px solid var(--rule); padding-top: 18px; }
 .cta p { margin: 0; flex: 1 1 280px; }
@@ -255,6 +258,12 @@ input.invalid { border-color: var(--bad); background: var(--bad-soft); }
       </div>
     </div>
 
+    <div class="map-wrap" id="mapWrap" hidden>
+      <h2 id="mapTitle">מפת מחירי הרחובות</h2>
+      <div class="map" id="map" role="img" aria-label="מפת הרחובות בעיר, צבועים לפי מחיר למ״ר"></div>
+      <p class="hint" id="mapNote"></p>
+    </div>
+
     <div class="cta" id="cta" hidden>
       <p><strong>רוצים דוח מלא?</strong> כל העסקאות ברחוב, מגמת מחירים בשכונה וטיעונים מוכנים למשא ומתן, בקובץ PDF.</p>
       <a class="button" id="ctaLink" href="#" target="_blank" rel="noopener">להזמנת דוח</a>
@@ -292,6 +301,8 @@ const $ = (id) => document.getElementById(id);
 const nf = new Intl.NumberFormat("he-IL", { maximumFractionDigits: 0 });
 const ils = (v) => "₪" + nf.format(Math.round(v / 1000) * 1000);
 let META = null;
+let STREETS_INDEX = {};
+const mapPrices = {};
 const cityCache = {};
 
 async function loadJSON(path) {
@@ -405,8 +416,34 @@ function render(city, a, est, v) {
   $("scaleMin").textContent = ils(lo); $("scaleMax").textContent = ils(hi);
 
   drawTrend(city);
+  drawMap(city, a);
   drawComps(Estimator.similarDeals(city, a, 8), a);
   if (CONFIG.reportUrl) { $("cta").hidden = false; $("ctaLink").href = CONFIG.reportUrl; }
+}
+
+/* street price map (OpenStreetMap lines matched to our streets) */
+function streetPrices(city) {
+  if (mapPrices[city.name]) return mapPrices[city.name];
+  const out = {};
+  for (const [s, v] of Object.entries(city.streets)) {
+    if (v[1] < 3) continue;
+    try {
+      out[s] = Estimator.estimate(META, city, { street: s, area: 100, floor: 3, buildingFloors: 6, yearBuilt: 2000, type: "regular", newStatus: "" }).ppsqm;
+    } catch (err) { /* skip */ }
+  }
+  return (mapPrices[city.name] = out);
+}
+function drawMap(city, a) {
+  const entry = STREETS_INDEX[city.name];
+  if (!entry || !window.ShaveMap) { $("mapWrap").hidden = true; return; }
+  $("mapWrap").hidden = false;
+  const onMap = a.street && city.streets[a.street];
+  $("mapTitle").textContent = onMap ? `${a.street} על מפת המחירים של ${city.name}` : `מפת מחירי הרחובות ב${city.name}`;
+  $("mapNote").textContent = "כל רחוב צבוע לפי המחיר המשוער למ\"ר לדירה סטנדרטית, מירוק (זול) לאדום (יקר). העבירו את העכבר על רחוב לפרטים.";
+  ShaveMap.draw($("map"), { geometryUrl: "data/streets/" + encodeURIComponent(entry.file) + ".json?v=" + META.version,
+                            prices: streetPrices(city), highlight: a.street })
+    .then((r) => { if (a.street && !r.highlighted) $("mapNote").textContent = "הרחוב שבחרתם לא נמצא במפה. " + $("mapNote").textContent; })
+    .catch(() => { $("mapWrap").hidden = true; });
 }
 
 function drawTrend(city) {
@@ -456,6 +493,10 @@ async function init() {
   }
   catch (err) { return fail("לא הצלחנו לטעון את נתוני העסקאות. אם פתחתם את הקובץ ישירות, הריצו את האתר דרך שרת מקומי (ראו README)."); }
   $("testBanner").hidden = !META.test_data;
+  try {
+    STREETS_INDEX = await loadJSON("data/streets/index.json?v=" + META.version);
+    await new Promise((ok, bad) => { const sc = document.createElement("script"); sc.src = "streetmap.js?v=" + META.version; sc.onload = ok; sc.onerror = bad; document.head.appendChild(sc); });
+  } catch (err) { STREETS_INDEX = {}; }
   $("dataDate").innerHTML = 'מבוסס על <span class="num">' + nf.format(META.n_deals) + "</span> עסקאות<br>מחירים מעודכנים לרבעון " + META.latest_quarter.slice(5) + "/" + META.latest_quarter.slice(0, 4);
   const m = META.metrics;
   $("accuracy").textContent = `דיוק המודל בבדיקה על ${nf.format(m.test_deals)} עסקאות שלא שימשו לאימון: טעות חציונית של ${Math.round(m.median_abs_pct_error * 100)}%, ו־${Math.round(m.share_within_10pct * 100)}% מההערכות בטווח של 10% מהמחיר בפועל.`;

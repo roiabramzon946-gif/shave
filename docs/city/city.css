@@ -39,4 +39,5 @@ border-radius:10px;padding:18px 20px}.cta p{margin:0;flex:1 1 260px}
 .city-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:4px 18px;margin:0;padding:0;list-style:none}
 .city-list li{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--rule);padding:6px 0}
 .note{color:var(--muted);font-size:.85rem;margin:0;max-width:75ch}
+.map{height:440px;border-radius:8px;border:1px solid var(--rule);overflow:hidden}
 footer{color:var(--muted);font-size:.82rem;display:grid;gap:6px}footer p{margin:0;max-width:75ch}
