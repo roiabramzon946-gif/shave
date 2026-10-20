@@ -59,6 +59,17 @@ button { font: 600 .95rem var(--body); background: var(--brand); color: var(--br
 .contact a { font-weight: 600; background: var(--brand); color: var(--brand-ink); border-radius: 6px; padding: 9px 16px; text-decoration: none; }
 .foot { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: .72rem; color: var(--muted); }
 .foot a { color: var(--muted); }
+/* ui-v2 */
+button, .contact a { transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .2s, filter .2s; }
+button:hover, .contact a:hover { transform: translateY(-2px) scale(1.04); box-shadow: 0 8px 16px -8px var(--brand); }
+button:active, .contact a:active { transform: scale(.96); box-shadow: none; transition-duration: .06s; }
+input, select { transition: border-color .15s, box-shadow .15s; }
+input:hover, select:hover { border-color: var(--muted); }
+input:focus, select:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 22%, transparent); }
+.stamp.stamped { animation: w-stamp .5s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes w-stamp { 0% { transform: rotate(-14deg) scale(1.8); opacity: 0; } 60% { transform: rotate(-1deg) scale(.92); opacity: 1; } 100% { transform: rotate(-2deg) scale(1); } }
+.stamp { display: inline-block; transform: rotate(-2deg); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
 </style>
 </head>
 <body>
@@ -195,6 +206,7 @@ async function run(e) {
   const v = Estimator.verdict(asking, est);
   $("result").hidden = false;
   $("stamp").textContent = VERDICT[v.level][0]; $("stamp").className = "stamp lv-" + v.level;
+  const stEl = $("stamp"); stEl.classList.remove("stamped"); void stEl.offsetWidth; stEl.classList.add("stamped");
   $("verdictText").textContent = VERDICT[v.level][1] + (a.street && !est.streetKnown ? " הרחוב לא נמצא, ההערכה לפי ממוצע העיר." : "");
   $("fValue").textContent = ils(est.value);
   $("fRange").textContent = ils(est.low) + " עד " + ils(est.high);

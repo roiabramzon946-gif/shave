@@ -40,4 +40,23 @@ border-radius:10px;padding:18px 20px}.cta p{margin:0;flex:1 1 260px}
 .city-list li{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--rule);padding:6px 0}
 .note{color:var(--muted);font-size:.85rem;margin:0;max-width:75ch}
 .map{height:440px;border-radius:8px;border:1px solid var(--rule);overflow:hidden}
+/* interaction: buttons and chips answer the pointer, rows light up when scanned */
+.button{transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .2s}
+.button:hover{transform:translateY(-2px) scale(1.04);box-shadow:0 10px 20px -10px var(--accent)}
+.button:active{transform:scale(.96);box-shadow:none;transition-duration:.06s}
+.links a{display:inline-block;text-decoration:none;border:1px solid var(--rule);border-radius:999px;padding:4px 12px;
+background:var(--sheet);transition:transform .16s cubic-bezier(.34,1.56,.64,1),background-color .16s,border-color .16s}
+.links a:hover{transform:scale(1.06);background:var(--accent-soft);border-color:var(--accent)}
+.city-list li{transition:background-color .12s;border-radius:4px;padding-inline:6px}
+.city-list li:hover{background:var(--accent-soft)}
+tbody tr{transition:background-color .12s}tbody tr:hover{background:var(--accent-soft)}
+body{position:relative}
+.cadastre{position:absolute;inset:0 0 auto 0;height:560px;z-index:-1;pointer-events:none;color:var(--accent);overflow:hidden;
+-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 25%,transparent 100%);mask-image:linear-gradient(to bottom,#000 0%,#000 25%,transparent 100%)}
+.cadastre svg{width:100%;height:100%;display:block}
+.cadastre .blk{fill:none;stroke:currentColor;stroke-width:1.3;opacity:.22}
+.cadastre .prc{stroke:currentColor;stroke-width:.7;opacity:.15}
+.cadastre text{fill:currentColor;font-family:var(--num);text-anchor:middle}
+.cadastre .no{font-size:11px;opacity:.22}.cadastre .blkno{font-size:18px;opacity:.14;letter-spacing:.05em}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 footer{color:var(--muted);font-size:.82rem;display:grid;gap:6px}footer p{margin:0;max-width:75ch}

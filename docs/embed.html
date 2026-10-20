@@ -41,6 +41,14 @@ pre { margin: 0; background: var(--paper); border: 1px solid var(--rule); border
   font: 500 .8rem/1.5 var(--num); direction: ltr; text-align: left; white-space: pre; }
 button { font: 600 .95rem var(--body); background: var(--accent); color: var(--sheet); border: 0; border-radius: 6px; padding: 9px 16px; cursor: pointer; justify-self: start; }
 .hint { margin: 0; font-size: .85rem; color: var(--muted); }
+/* ui-v2 */
+button { transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .2s; }
+button:hover { transform: translateY(-2px) scale(1.04); box-shadow: 0 8px 16px -8px var(--accent); }
+button:active { transform: scale(.96); box-shadow: none; transition-duration: .06s; }
+input, select { transition: border-color .15s, box-shadow .15s; }
+input:hover, select:hover { border-color: var(--muted); }
+input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 .mock { border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; background: var(--sheet); min-width: 0; }
 .mock-bar { background: var(--paper); border-bottom: 1px solid var(--rule); padding: 8px 12px; font-size: .8rem; color: var(--muted); direction: ltr; text-align: left; }
 .mock-body { padding: 18px; display: grid; gap: 12px; }

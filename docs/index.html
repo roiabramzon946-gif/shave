@@ -169,10 +169,62 @@ footer p { margin: 0; max-width: 75ch; }
 .error { color: var(--bad); font-weight: 500; }
 input.invalid { border-color: var(--bad); background: var(--bad-soft); }
 .field-err { color: var(--bad); font-size: .8rem; font-weight: 500; }
+/* ui-v2 */
+:root { --ease-out: cubic-bezier(.2, .8, .2, 1); --ease-spring: cubic-bezier(.34, 1.56, .64, 1); }
+/* buttons grow a little under the pointer and press in when clicked */
+button.primary, a.button { transition: transform .18s var(--ease-spring), box-shadow .2s var(--ease-out), background-color .2s, color .2s; will-change: transform; }
+button.primary:hover { filter: none; transform: translateY(-2px) scale(1.04); box-shadow: 0 10px 20px -10px var(--accent); }
+button.primary:active { transform: translateY(0) scale(.96); box-shadow: none; transition-duration: .06s; }
+a.button:hover { background: var(--accent); color: var(--sheet); transform: translateY(-2px) scale(1.03); }
+a.button:active { transform: scale(.97); transition-duration: .06s; }
+/* fields answer hover and focus */
+input, select { transition: border-color .15s, box-shadow .15s, background-color .15s; }
+input:hover, select:hover { border-color: var(--muted); }
+input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); background: var(--sheet); }
+input.invalid:focus { border-color: var(--bad); box-shadow: 0 0 0 4px var(--bad-soft); }
+/* city links become chips */
+.city-links { gap: 8px; }
+.city-links a { display: inline-block; text-decoration: none; border: 1px solid var(--rule); border-radius: 999px; padding: 4px 12px;
+  background: var(--sheet); transition: transform .16s var(--ease-spring), background-color .16s, border-color .16s; }
+.city-links a:hover { transform: scale(1.06); background: var(--accent-soft); border-color: var(--accent); }
+/* rows light up when scanned */
+tbody tr { transition: background-color .12s; }
+tbody tr:hover { background: var(--accent-soft); }
+/* the price ruler glides to the new values */
+.scale .band { transition: right .6s var(--ease-out), width .6s var(--ease-out); }
+.scale .mark { transition: right .6s var(--ease-out); }
+/* the verdict lands like a rubber stamp */
+.stamp.stamped { animation: stamp-in .55s var(--ease-out) both; }
+@keyframes stamp-in {
+  0% { transform: rotate(-16deg) scale(2); opacity: 0; }
+  55% { transform: rotate(-1deg) scale(.9); opacity: 1; }
+  75% { transform: rotate(-3deg) scale(1.04); }
+  100% { transform: rotate(-2deg) scale(1); }
+}
+.result.thud { animation: thud .3s .28s var(--ease-out); }
+@keyframes thud { 0% { transform: translateY(0); } 35% { transform: translateY(3px); } 100% { transform: translateY(0); } }
+/* price trend: point at a quarter to read it */
+svg.trend { cursor: crosshair; touch-action: pan-y; }
+svg.trend .hover-line { stroke: var(--ink); stroke-width: 1; stroke-dasharray: 3 3; }
+svg.trend .hover-dot { fill: var(--sheet); stroke: var(--accent); stroke-width: 2.5; }
+svg.trend .hover-bg { fill: var(--sheet); stroke: var(--rule); }
+svg.trend text.hover-label { fill: var(--ink); font: 600 12px var(--num); }
+/* bg-v1: a faint land-registry map (blocks and parcels) behind the top of the page */
+body { position: relative; }
+.cadastre { position: absolute; inset: 0 0 auto 0; height: 640px; z-index: -1; pointer-events: none; color: var(--accent); overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 30%, transparent 100%); mask-image: linear-gradient(to bottom, #000 0%, #000 30%, transparent 100%); }
+.cadastre svg { width: 100%; height: 100%; display: block; }
+.cadastre .blk { fill: none; stroke: currentColor; stroke-width: 1.3; opacity: .24; }
+.cadastre .prc { stroke: currentColor; stroke-width: .7; opacity: .17; }
+.cadastre text { fill: currentColor; font-family: var(--num); text-anchor: middle; }
+.cadastre .no { font-size: 11px; opacity: .24; }
+.cadastre .blkno { font-size: 18px; opacity: .15; letter-spacing: .05em; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
 </head>
 <body>
+<div class="cadastre" aria-hidden="true"></div>
+<script src="cadastre.js"></script>
 <div class="wrap">
   <header>
     <div>
@@ -408,10 +460,28 @@ function floorProblem() {
 
 function fail(msg) { $("formMsg").textContent = msg; $("formMsg").className = "hint error"; }
 
+/* ui-v2 helpers */
+const REDUCED_MOTION = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+function replay(el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+function countTo(el, to) {
+  const from = el._v != null ? el._v : to * 0.85;
+  el._v = to;
+  if (REDUCED_MOTION) { el.textContent = ils(to); return; }
+  cancelAnimationFrame(el._raf);
+  const t0 = performance.now(), dur = 700;
+  const step = (now) => {
+    const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+    el.textContent = ils(from + (to - from) * e);
+    if (k < 1) el._raf = requestAnimationFrame(step);
+  };
+  el._raf = requestAnimationFrame(step);
+}
+
 function render(city, a, est, v) {
   $("result").hidden = false;
   const [title, text] = VERDICT[v.level];
   $("stamp").textContent = title; $("stamp").className = "stamp lv-" + v.level;
+  replay($("stamp"), "stamped"); replay($("result"), "thud");
   let note = "";
   if (!a.street) note = " ההערכה לפי ממוצע העיר, כי לא נבחר רחוב.";
   else if (!est.streetKnown) note = " הרחוב לא נמצא במאגר, ולכן ההערכה לפי ממוצע העיר.";
@@ -420,7 +490,7 @@ function render(city, a, est, v) {
   if (a.areaGuessed) note += ` השטח לא הוזן, אז הנחנו ${a.area} מ"ר, שטח טיפוסי ל־${a.rooms} חדרים.`;
   $("verdictText").textContent = text + note;
 
-  $("fValue").textContent = ils(est.value);
+  countTo($("fValue"), est.value);
   $("fRange").textContent = "טווח סביר: " + ils(est.low) + " עד " + ils(est.high);
   $("fPpsqm").textContent = "₪" + nf.format(est.ppsqm);
   $("fStreetPpsqm").textContent = est.streetMedianPpsqm
@@ -487,6 +557,32 @@ function drawTrend(city) {
     years.filter((_, k) => k % step === 0).map(([i, yr]) => `<text x="${x(i)}" y="${H - 6}" text-anchor="${i === 0 ? "start" : "middle"}">${yr}</text>`).join("");
   const growth = Math.round((last[1] / first[1] - 1) * 100);
   svg.setAttribute("aria-label", `מחיר למ"ר עלה ב־${growth}% מ־${first[0]} עד ${last[0]}`);
+  // point at the chart to read the price of each quarter
+  const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  g.setAttribute("aria-hidden", "true");
+  g.innerHTML = `<line class="hover-line" y1="${T}" y2="${H - B}"/><circle class="hover-dot" r="5"/>` +
+    `<rect class="hover-bg" rx="4" height="22"/><text class="hover-label" text-anchor="middle" direction="rtl"></text>`;
+  g.style.display = "none";
+  svg.appendChild(g);
+  const [ln, dot, bg, lab] = g.children;
+  const show = (clientX) => {
+    const r = svg.getBoundingClientRect();
+    const vx = ((clientX - r.left) / r.width) * W;
+    const i = Math.max(0, Math.min(t.length - 1, Math.round(((vx - L) / (W - L - R)) * (t.length - 1))));
+    const cx = x(i), cy = y(t[i][1]);
+    g.style.display = "";
+    ln.setAttribute("x1", cx); ln.setAttribute("x2", cx);
+    dot.setAttribute("cx", cx); dot.setAttribute("cy", cy);
+    lab.textContent = `רבעון ${t[i][0].slice(5).replace("Q", "")} ${t[i][0].slice(0, 4)}: ⁦₪${nf.format(t[i][1])}⁩`;
+    const w = lab.getComputedTextLength() + 18;
+    const lx = Math.max(w / 2 + 2, Math.min(W - w / 2 - 2, cx));
+    const ly = Math.max(T + 16, cy - 16);
+    lab.setAttribute("x", lx); lab.setAttribute("y", ly);
+    bg.setAttribute("x", lx - w / 2); bg.setAttribute("y", ly - 15); bg.setAttribute("width", w);
+  };
+  svg.onpointermove = (e) => show(e.clientX);
+  svg.onpointerdown = (e) => show(e.clientX);
+  svg.onpointerleave = () => { g.style.display = "none"; };
 }
 
 function drawComps(rows, a) {
