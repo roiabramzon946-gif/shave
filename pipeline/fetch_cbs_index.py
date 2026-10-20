@@ -206,7 +206,7 @@ def main():
         rows += [{"district": key, "year": y, "month": m, "value": v} for (y, m), v in sorted(vals.items())]
     if not any(r["district"] == "ארצי" for r in rows):
         raise SystemExit("The national index could not be read. Run:  head -c 1500 data/cbs_raw/*data_price*40010*\n"
-                         "and send Claude what it prints.")
+                         "to see what the CBS API returned.")
     with open(OUT, "w", encoding="utf-8-sig", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=["district", "year", "month", "value"])
         w.writeheader()

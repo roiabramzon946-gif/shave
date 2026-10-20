@@ -1,97 +1,96 @@
-# שווה? — בדיקת מחיר דירה לפי עסקאות אמת
+# Shave? — Israeli apartment price checker
 
-אתר שבודק אם המחיר המבוקש לדירה הוגן. הגולש מזין עיר, רחוב, חדרים, שטח, קומה ומחיר מבוקש, ומקבל:
+**Live site (Hebrew): https://roiabramzon946-gif.github.io/shave/**
 
-- שווי משוער וטווח סביר (80% מהעסקאות נופלות בתוכו)
-- ציון: מתחת לשוק / הוגן / בקצה העליון / מעל השוק / יקר משמעותית
-- מחיר למ"ר מול החציון ברחוב
-- גרף מגמת מחירים בעיר
-- עסקאות דומות ברחוב, כולל המחיר שלהן מותאם להיום
+*שווה?* tells a buyer whether an asking price for an apartment in Israel is fair. You enter the city, street, size, floor, building age and asking price; the site returns an estimated value, a likely price range, a verdict (below market → significantly overpriced), the city's price trend and comparable recent sales on the same street.
 
-האתר סטטי (HTML + JavaScript בלבד), כך שאפשר להעלות אותו בחינם ל־GitHub Pages.
+It is built on ~580,000 recorded apartment sales from the Israel Tax Authority, brought up to date with the Central Bureau of Statistics (CBS) dwelling price index.
 
-## מבנה הפרויקט
+## Results
 
-```
-pipeline/download_data.py   מוריד את מאגר העסקאות מ-odata.org.il (עד אמצע 2024)
-pipeline/fetch_cbs_index.py מוריד את מדד מחירי הדירות של הלמ"ס (ארצי ולפי מחוז)
-pipeline/fetch_recent.py    לא בשימוש: GovMap דורש היום reCAPTCHA
-pipeline/build_model.py     מנקה, מאמן מודל, בודק דיוק ומייצא נתונים לאתר
-pipeline/make_test_data.py  נתוני דמה לבדיקות בלבד (לא לפרסום!)
-docs/                       האתר עצמו (זה מה שעולה ל-GitHub Pages)
-docs/estimator.js           נוסחת ההערכה (זהה למודל ב-Python)
-tests/parity_test.py        מוודא שהאתר והמודל נותנים אותו מחיר
-build_all.bat               מריץ את כל השלבים בלחיצה (Windows)
-preview_site.bat            פותח את האתר במחשב שלך
-```
+Evaluated on 87,420 held-out sales the model never saw during training:
 
-## הרצה ראשונה (Windows)
+| Metric | Model | Baseline: city median price/m² |
+|---|---|---|
+| Median absolute error | **8.8%** | 13.6% |
+| Estimates within 10% of the actual price | 55% | — |
+| Estimates within 20% of the actual price | 81% | — |
+| Share of sales inside the displayed 80% range | 80.0% | — |
 
-1. התקן Python 3.11 ומעלה מ-python.org (סמן "Add Python to PATH" בהתקנה).
-2. לחיצה כפולה על `build_all.bat`. ההורדה לוקחת כמה דקות.
-3. פתח את `data\report.txt` ובדוק את הדיוק (ראה למטה).
-4. לחיצה כפולה על `preview_site.bat` כדי לראות את האתר.
-
-ב-Mac/Linux אותם שלבים בפקודות:
+## How it works
 
 ```
+odata.org.il deals (CSV, 1.07M rows) ──► clean & filter ──► quarterly price index per city
+                                                │
+CBS dwelling price index (API) ─────────────────┤
+                                                ▼
+                     log(price per m²) = features + city effect + street effect
+                                                │
+                                                ▼
+                        static JSON (per city) ──► static website (GitHub Pages)
+```
+
+1. **Cleaning.** Apartments only (no shops, plots or offices), plausible prices and sizes, Hebrew floor names parsed to numbers (`"שלישית"` → 3, `"א"` → 1), and robust outlier removal within each city and year (4 × MAD). 54% of raw rows survive.
+2. **Time adjustment.** Every sale is moved to a common price level using a smoothed quarterly index per city (national trend for small cities).
+3. **Model.** Ridge regression on log price per m² with:
+   - floor, ground floor, top floor, high-rise, apartment size;
+   - building age at the time of sale, in bands;
+   - new-from-developer, split into *ready to move in* and *off-plan*. The source has no such flag, so it is derived from the building year relative to the sale year;
+   - apartment type (garden, penthouse, duplex);
+   - city and street location effects, fitted by backfitting. Streets with few sales are shrunk toward the city average so one unusual sale can't set a street's price.
+4. **Price range.** The 80% range comes from the model's actual errors on held-out sales, and is wider for streets with fewer sales.
+5. **Bringing prices up to date.** The open deals file ends in August 2024. Prices are moved forward to the latest month with the CBS dwelling price index of the city's district (Jerusalem, North, Haifa, Center, Tel Aviv, South; national index for Judea & Samaria).
+6. **Serving.** The model is exported as coefficients plus per-city JSON files. The browser recomputes the estimate in JavaScript (`docs/estimator.js`). A parity test checks that the JavaScript and Python estimates match to within 1e-4.
+
+## Findings along the way
+
+- **The open file has no room counts.** The rooms column is empty in every row, so the estimate is driven by size in m², which is also how appraisers work. If a user leaves the size empty, the site uses a typical size for the number of rooms.
+- **New apartments are not much more expensive than 5–10-year-old ones.** Compared with a building from 1995, a ready new apartment comes out about 13% higher and an off-plan one about 12% higher, while a building from 2018 comes out about 14% higher. A likely reason is that many developer sales in 2016–2022 were discounted government-lottery apartments (*מחיר למשתכן*), which the data does not flag.
+- **Prices since the data ends (Sept 2024 → July 2026, CBS):** Jerusalem +6.9%, North +4.8%, Haifa +1.6%, South +1.4%, Tel Aviv −2.8%, Center −4.1%, national −0.6%.
+
+## Limitations
+
+- An estimate from past sales, not an appraisal. It does not see condition, view, parking, storage or legal status.
+- Recent prices rely on a district-level index, not on individual recent sales.
+- New-apartment estimates may be slightly low for the open market (see above).
+
+## Run it yourself
+
+Requires Python 3.11+ and Node.js (for the parity test only).
+
+```bash
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-python pipeline/download_data.py
-python pipeline/fetch_cbs_index.py
-python pipeline/build_model.py
-python tests/parity_test.py
-python -m http.server 8000 --directory docs
+
+python pipeline/download_data.py      # ~240 MB of deals from odata.org.il
+python pipeline/fetch_cbs_index.py    # CBS dwelling price index
+python pipeline/build_model.py        # clean, evaluate, train, export to docs/data
+python tests/parity_test.py           # JS estimate == Python estimate
+
+python -m http.server 8000 --directory docs   # open http://localhost:8000
 ```
 
-> חשוב: אם הרצת קודם עם נתוני דמה (`--test`), ודא שהפס הצהוב "נתוני דמה" נעלם מהאתר לפני שאתה מפרסם.
+On Windows, `build_all.bat` runs the whole pipeline and `preview_site.bat` serves the site.
 
-## איך לקרוא את הדוח
+To refresh prices, re-run `fetch_cbs_index.py` and `build_model.py` when the CBS publishes a new index, then push.
 
-| מדד | מה זה אומר | יעד סביר |
-|---|---|---|
-| median_abs_pct_error | הטעות החציונית בהערכה | 8%–15% |
-| share_within_10pct | אחוז ההערכות בטווח 10% מהמחיר בפועל | מעל 45% |
-| interval_80_coverage | כמה עסקאות באמת נפלו בטווח שהאתר מציג | קרוב ל-0.80 |
-| baseline_city_median_abs_pct_error | טעות של "ממוצע העיר" פשוט | המודל צריך לנצח אותו בבירור |
+## Project structure
 
-אם `build_model.py` עוצר עם הודעה על עמודת שטח או עמודות חסרות, שלח לי את ההודעה. מבנה הקובץ במאגר משתנה לפעמים, והתיקון קטן.
+```
+pipeline/download_data.py    download the deals dataset
+pipeline/fetch_cbs_index.py  download the CBS dwelling price index (national + districts)
+pipeline/build_model.py      cleaning, price index, model, evaluation, export
+pipeline/make_test_data.py   fake data in the same schema, for development
+docs/                        the website (served by GitHub Pages)
+docs/estimator.js            the estimate formula, mirrored from the Python model
+tests/parity_test.py         checks the website and the model agree
+```
 
-## איך המודל עובד
+## Data sources
 
-1. כל עסקה מותאמת לרמת המחירים של היום לפי מדד רבעוני של העיר.
-2. לוג המחיר למ"ר מוסבר ע"י: קומה, קרקע/גג, שטח, חדרים, גיל הבניין, דירה חדשה, גובה הבניין וסוג הדירה.
-3. לכל עיר ולכל רחוב יש "אפקט מיקום". רחוב עם מעט עסקאות נמשך לכיוון ממוצע העיר, כדי שעסקה חריגה אחת לא תקבע את המחיר.
-4. הטווח מחושב מהטעויות האמיתיות של המודל על עסקאות שלא ראה, ונעשה רחב יותר ברחובות עם מעט עסקאות.
+- Real-estate deals: [מאגר עסקאות הנדל"ן](https://www.odata.org.il/dataset/nadlan) on odata.org.il, Israel Tax Authority data, CC BY.
+- Dwelling price index: [Central Bureau of Statistics index API](https://www.cbs.gov.il/en/Pages/Api-Indices.aspx).
 
-## העלאה לאינטרנט (GitHub Pages, חינם)
+---
 
-1. צור ריפו חדש ב-GitHub (למשל `shave`) והעלה את כל התיקייה.
-2. ב-Settings → Pages בחר: Branch `main`, תיקייה `/docs`.
-3. אחרי דקה האתר יהיה זמין בכתובת `https://<שם-משתמש>.github.io/<שם-ריפו>/`.
-4. לדומיין משלך (למשל shave.co.il) קונים דומיין ומחברים אותו באותו מסך.
-
-כדי לעדכן מחירים (פעם בחודשיים, כשהלמ"ס מפרסם מדד חדש): `python pipeline/fetch_cbs_index.py` ואז `python pipeline/build_model.py`, ודוחפים ל-GitHub.
-
-## למה החדרים כמעט לא משנים את המחיר?
-
-המחיר נקבע לפי מ"ר. בשטח קבוע, יותר חדרים פירושם חדרים קטנים יותר, ולכן ההשפעה קטנה. במאגר הרשמי עמודת החדרים ריקה לגמרי, ולכן המודל לא יודע כמה חדרים יש בכל עסקה. אם הגולש לא מזין שטח, האתר מניח שטח טיפוסי למספר החדרים.
-
-## איך מרוויחים מזה
-
-לפי הסדר שהייתי מנסה:
-
-1. **דוח מלא בתשלום (49–149 ₪).** בקובץ `docs/index.html`, בראש הסקריפט, יש `CONFIG.reportUrl`. שם שמים קישור לדף תשלום (למשל דף סליקה של Grow/משולם, PayPal או טופס הזמנה). בהתחלה מכינים את הדוחות ידנית. אם יש ביקוש, הופכים אותם לאוטומטיים.
-2. **לידים.** מי שבודק מחיר דירה צריך בדרך כלל יועץ משכנתאות, שמאי ועורך דין. אפשר לגבות מהם על כל פנייה.
-3. **מנוי למתווכים ומשקיעים.** כלי השוואה מהיר על הרבה דירות, בתשלום חודשי.
-4. **פרסומות.** רק אחרי שיש תנועה של כמה אלפי גולשים בחודש.
-
-## משפטי
-
-- הנתונים מהמאגר הפתוח בישראל ברישיון CC-BY. חובה לתת קרדיט למקור, וזה כבר מופיע בתחתית האתר.
-- האתר מציג הערכה סטטיסטית ולא שמאות. ההבהרה מופיעה באתר, ואל תמחק אותה.
-- לפני גבייה, כדאי לבדוק מול רואה חשבון איך לפתוח עוסק פטור.
-
-## עדכניות המחירים
-
-מאגר העסקאות הפתוח מגיע עד אוגוסט 2024. כדי שההערכה תשקף את המחירים של היום, `build_model.py` מכפיל את המחירים בשינוי של מדד מחירי הדירות של הלמ"ס מאז, לפי המחוז של כל עיר. ערים ביהודה ושומרון משתמשות במדד הארצי. בסוף הריצה מודפס כמה כל מחוז השתנה.
+Built by [Roi Abramzon](https://github.com/roiabramzon946-gif), B.Sc. Statistics & Data Science, Tel Aviv University.

@@ -12,3 +12,6 @@ data/govmap_cache/
 data/govmap_cache_test/
 data/report.txt
 *.part
+
+# private notes
+BUSINESS_NOTES.md

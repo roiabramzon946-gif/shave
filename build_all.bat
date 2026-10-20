@@ -17,6 +17,6 @@ pause
 exit /b 0
 :error
 echo.
-echo Something failed. Copy the error above and send it to Claude.
+echo Something failed. See the error above.
 pause
 exit /b 1
