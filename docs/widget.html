@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>בדיקת מחיר דירה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Hebrew:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Embeddable price check: one compact card. Brand color comes from ?color=, light/dark from ?theme=. */
+:root {
+  --bg: #ffffff; --ink: #17212b; --muted: #5d6b78; --rule: #d5dce2; --field: #f3f5f6;
+  --brand: #2b4c7e; --brand-ink: #ffffff;
+  --good: #1f7a4d; --good-soft: #e1f2e9; --warn: #9a6400; --warn-soft: #fbf0d9; --bad: #b23a2e; --bad-soft: #f8e3e0;
+  --body: "IBM Plex Sans Hebrew", "Segoe UI", Arial, sans-serif;
+  --num: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --bg: #18222c; --ink: #e7edf2; --muted: #9aa8b5; --rule: #2c3a47; --field: #111820;
+  --good: #6fcf9c; --good-soft: #173527; --warn: #e8b660; --warn-soft: #3a2e15; --bad: #f08a7e; --bad-soft: #3d1f1b;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font: 400 15px/1.5 var(--body); }
+.card { padding: 18px; display: grid; gap: 14px; border: 1px solid var(--rule); border-radius: 10px; }
+h1 { font: 600 1.15rem var(--body); margin: 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px 12px; }
+.field { display: grid; gap: 4px; min-width: 0; }
+label { font-size: .8rem; font-weight: 500; color: var(--muted); }
+input, select { font: 500 .95rem var(--body); color: var(--ink); background: var(--field); border: 1px solid var(--rule);
+  border-radius: 6px; padding: 8px 10px; width: 100%; min-width: 0; }
+input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+input.invalid { border-color: var(--bad); background: var(--bad-soft); }
+.row { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; }
+.row .field { flex: 1 1 180px; }
+#asking { font-family: var(--num); direction: ltr; text-align: right; }
+button { font: 600 .95rem var(--body); background: var(--brand); color: var(--brand-ink); border: 0; border-radius: 6px;
+  padding: 10px 18px; cursor: pointer; }
+.msg { margin: 0; font-size: .85rem; color: var(--bad); font-weight: 500; }
+.result { display: grid; gap: 10px; border-top: 1px dashed var(--rule); padding-top: 14px; }
+.verdict { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.stamp { font-weight: 600; padding: 5px 12px; border-radius: 6px; border: 1.5px solid currentColor; }
+.lv-low, .lv-fair { color: var(--good); background: var(--good-soft); }
+.lv-upper { color: var(--warn); background: var(--warn-soft); }
+.lv-high, .lv-very_high { color: var(--bad); background: var(--bad-soft); }
+.verdict p { margin: 0; flex: 1 1 200px; font-size: .9rem; }
+.figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.fig { display: grid; gap: 1px; }
+.fig .k { font-size: .78rem; color: var(--muted); }
+.fig .v { font: 500 1.2rem/1.25 var(--num); direction: ltr; text-align: right; font-variant-numeric: tabular-nums; }
+.fig .s { font-size: .78rem; color: var(--muted); }
+.contact { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap;
+  background: var(--field); border-radius: 8px; padding: 12px 14px; }
+.contact p { margin: 0; flex: 1 1 200px; font-size: .9rem; }
+.contact a { font-weight: 600; background: var(--brand); color: var(--brand-ink); border-radius: 6px; padding: 9px 16px; text-decoration: none; }
+.foot { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: .72rem; color: var(--muted); }
+.foot a { color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <h1 id="title">בדיקת מחיר דירה</h1>
+  <form id="form" novalidate autocomplete="off">
+    <div class="grid">
+      <div class="field"><label for="city">עיר</label><input id="city" list="cityList"><datalist id="cityList"></datalist></div>
+      <div class="field"><label for="street">רחוב</label><input id="street" list="streetList"><datalist id="streetList"></datalist></div>
+      <div class="field"><label for="area">שטח (מ"ר)</label><input id="area" type="number" inputmode="numeric" min="20" max="500"></div>
+      <div class="field"><label for="floor">קומה</label><input id="floor" type="number" inputmode="numeric" min="0" max="80" placeholder="0 = קרקע"></div>
+      <div class="field"><label for="bfloors">קומות בבניין</label><input id="bfloors" type="number" inputmode="numeric" min="1" max="80" placeholder="לא חובה"></div>
+      <div class="field"><label for="built">שנת בנייה</label><input id="built" type="number" inputmode="numeric" placeholder="לא חובה"></div>
+      <div class="field"><label for="newStatus">מצב הדירה</label>
+        <select id="newStatus"><option value="">יד שנייה</option><option value="ready">חדשה, מוכנה לכניסה</option><option value="presale">חדשה, על הנייר</option></select></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field"><label for="asking">מחיר מבוקש (₪)</label><input id="asking" inputmode="numeric" placeholder="2,450,000"></div>
+      <button type="submit">בדיקת מחיר</button>
+    </div>
+    <p class="msg" id="msg" role="alert"></p>
+  </form>
+
+  <div class="result" id="result" hidden aria-live="polite">
+    <div class="verdict"><span class="stamp" id="stamp"></span><p id="verdictText"></p></div>
+    <div class="figs">
+      <div class="fig"><span class="k">שווי משוער</span><span class="v" id="fValue"></span><span class="s" id="fRange"></span></div>
+      <div class="fig"><span class="k">מחיר למ"ר</span><span class="v" id="fPpsqm"></span></div>
+      <div class="fig"><span class="k">פער מהמבוקש</span><span class="v" id="fDiff"></span></div>
+    </div>
+    <div class="contact" id="contact" hidden>
+      <p id="contactText"></p>
+      <a id="contactLink" href="#" target="_blank" rel="noopener"></a>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>הערכה סטטיסטית לפי עסקאות עבר, לא שמאות.</span>
+    <a href="https://roiabramzon946-gif.github.io/shave/" target="_blank" rel="noopener">מופעל על ידי שווה?</a>
+  </div>
+</div>
+
+<script>
+/*
+ * Settings come from the address, e.g.
+ * widget.html?brand=כהן נדל"ן&color=0a7d55&contact=https://example.co.il/contact&city=רעננה&theme=dark
+ */
+const P = new URLSearchParams(location.search);
+const $ = (id) => document.getElementById(id);
+const nf = new Intl.NumberFormat("he-IL", { maximumFractionDigits: 0 });
+const ils = (v) => "₪" + nf.format(Math.round(v / 1000) * 1000);
+let META = null; const cache = {};
+
+const VERDICT = {
+  low: ["מתחת לשוק", "המחיר המבוקש נמוך מהטווח הצפוי. כדאי לבדוק למה."],
+  fair: ["מחיר הוגן", "המחיר קרוב לשווי המשוער לפי עסקאות דומות."],
+  upper: ["בקצה העליון", "המחיר בטווח הסביר אבל בחלק היקר שלו. יש מקום למשא ומתן."],
+  high: ["מעל השוק", "המחיר גבוה מהטווח שעסקאות דומות נסגרו בו."],
+  very_high: ["יקר משמעותית", "המחיר גבוה בהרבה ממה שדירות דומות נמכרו בו."],
+};
+
+function applySettings() {
+  const color = (P.get("color") || "").replace(/^#/, "");
+  if (/^[0-9a-fA-F]{6}$/.test(color)) {
+    document.documentElement.style.setProperty("--brand", "#" + color);
+    // white or dark text on the brand color, whichever reads better
+    const [r, g, b] = [0, 2, 4].map((i) => parseInt(color.slice(i, i + 2), 16) / 255);
+    const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    document.documentElement.style.setProperty("--brand-ink", lum > 0.6 ? "#17212b" : "#ffffff");
+  }
+  if (P.get("theme") === "dark") document.documentElement.dataset.theme = "dark";
+  const brand = (P.get("brand") || "").slice(0, 60);
+  if (P.get("title")) $("title").textContent = P.get("title").slice(0, 80);
+  const contact = P.get("contact") || "";
+  if (brand && /^https:\/\//.test(contact)) {
+    $("contactText").textContent = `רוצים הערכה מקצועית או ליווי בעסקה? ${brand} כאן בשבילכם.`;
+    $("contactLink").textContent = "דברו איתנו";
+    $("contactLink").href = contact;
+    $("contactLink").dataset.ok = "1";
+  }
+}
+
+async function loadJSON(p) { const r = await fetch(p, { cache: "no-cache" }); if (!r.ok) throw new Error(p); return r.json(); }
+const cityByName = (n) => META.cities.find((c) => c.name === (n || "").trim());
+async function getCity(c) { return cache[c.id] || (cache[c.id] = await loadJSON("data/cities/" + c.id + ".json?v=" + META.version)); }
+function fillStreets(city) {
+  const l = $("streetList"); l.innerHTML = "";
+  Object.entries(city.streets).sort((a, b) => b[1][1] - a[1][1]).forEach(([s]) => { const o = document.createElement("option"); o.value = s; l.appendChild(o); });
+}
+const num = (id) => { const v = $(id).value.replace(/[^\d.]/g, ""); return v === "" ? null : Number(v); };
+function fail(m) { $("msg").textContent = m; reportHeight(); }
+
+async function run(e) {
+  e && e.preventDefault();
+  $("msg").textContent = "";
+  ["floor", "bfloors"].forEach((id) => $(id).classList.remove("invalid"));
+  const c = cityByName($("city").value);
+  if (!c) return fail("בחרו עיר מהרשימה.");
+  const a = { street: $("street").value.trim(), area: num("area"), floor: num("floor"), buildingFloors: num("bfloors"),
+              yearBuilt: num("built"), newStatus: $("newStatus").value, type: "regular", rooms: null };
+  const asking = num("asking");
+  if (!a.area || a.area < 20) return fail('נא למלא שטח במ"ר.');
+  if (a.floor != null && a.buildingFloors != null && a.floor > a.buildingFloors) {
+    ["floor", "bfloors"].forEach((id) => $(id).classList.add("invalid"));
+    return fail(`בבניין יש ${a.buildingFloors} קומות, אז הקומה לא יכולה להיות ${a.floor}.`);
+  }
+  if (!asking || asking < 100000) return fail("נא למלא מחיר מבוקש בשקלים.");
+  const city = await getCity(c);
+  let est;
+  try { est = Estimator.estimate(META, city, a); } catch (err) { return fail("האתר התעדכן. רעננו את הדף."); }
+  if (!isFinite(est.value)) return fail("לא הצלחנו לחשב הערכה לנתונים האלה.");
+  const v = Estimator.verdict(asking, est);
+  $("result").hidden = false;
+  $("stamp").textContent = VERDICT[v.level][0]; $("stamp").className = "stamp lv-" + v.level;
+  $("verdictText").textContent = VERDICT[v.level][1] + (a.street && !est.streetKnown ? " הרחוב לא נמצא, ההערכה לפי ממוצע העיר." : "");
+  $("fValue").textContent = ils(est.value);
+  $("fRange").textContent = ils(est.low) + " עד " + ils(est.high);
+  $("fPpsqm").textContent = "₪" + nf.format(est.ppsqm);
+  const pct = Math.round(v.diff * 100);
+  $("fDiff").textContent = (pct > 0 ? "+" : "") + pct + "%";
+  $("contact").hidden = !$("contactLink").dataset.ok;
+  reportHeight();
+  try { parent.postMessage({ type: "shave-result", level: v.level }, "*"); } catch (err) {}
+}
+
+/* tell the page that embeds us how tall we are, so it can size the frame */
+function reportHeight() {
+  try { parent.postMessage({ type: "shave-height", height: Math.ceil($("card").getBoundingClientRect().height) + 2 }, "*"); } catch (err) {}
+}
+
+async function init() {
+  applySettings();
+  try {
+    META = await loadJSON("data/meta.json");
+    await new Promise((ok, bad) => { const s = document.createElement("script"); s.src = "estimator.js?v=" + META.version; s.onload = ok; s.onerror = bad; document.head.appendChild(s); });
+  } catch (err) { return fail("לא הצלחנו לטעון את הנתונים. נסו שוב מאוחר יותר."); }
+  META.cities.forEach((c) => { const o = document.createElement("option"); o.value = c.name; $("cityList").appendChild(o); });
+  $("city").addEventListener("change", async () => { const c = cityByName($("city").value); $("street").value = ""; if (c) fillStreets(await getCity(c)); });
+  $("asking").addEventListener("input", (e) => { const d = e.target.value.replace(/\D/g, ""); e.target.value = d ? nf.format(Number(d)) : ""; });
+  $("form").addEventListener("submit", run);
+  const pre = cityByName(P.get("city"));
+  if (pre) { $("city").value = pre.name; fillStreets(await getCity(pre)); }
+  new ResizeObserver(reportHeight).observe($("card"));
+  reportHeight();
+}
+init();
+</script>
+</body>
+</html>

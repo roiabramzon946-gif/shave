@@ -367,7 +367,7 @@ def main():
     (OUT / "index.html").write_text(index_page(meta, rows, slugs, gen_date), encoding="utf-8")
 
     today = datetime.now().strftime("%Y-%m-%d")
-    urls = [SITE, SITE + "city/"] + [SITE + "city/" + quote(slugs[c["name"]]) + ".html" for c in cities]
+    urls = [SITE, SITE + "city/", SITE + "embed.html"] + [SITE + "city/" + quote(slugs[c["name"]]) + ".html" for c in cities]
     sm = "".join(f"  <url><loc>{e(u)}</loc><lastmod>{today}</lastmod></url>\n" for u in urls)
     (DOCS / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n'
                                       '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'

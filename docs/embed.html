@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>בדיקת מחיר דירה לאתר שלך | שווה?</title>
+<meta name="description" content="הוסיפו לאתר של משרד התיווך שלכם כלי לבדיקת מחיר דירה לפי עסקאות אמת, בצבעים שלכם, עם כפתור פנייה אליכם.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Hebrew:wght@400;500;600&family=IBM+Plex+Mono:wght@500&family=Suez+One&display=swap">
+<style>
+/* Layout: settings column + code on one side, live preview inside a mock broker page on the other. */
+:root { --paper:#f3f5f6; --sheet:#fff; --ink:#17212b; --muted:#5d6b78; --rule:#d5dce2; --accent:#2b4c7e; --accent-soft:#e3eaf4;
+  --display:"Suez One","IBM Plex Sans Hebrew",Arial,sans-serif; --body:"IBM Plex Sans Hebrew","Segoe UI",Arial,sans-serif;
+  --num:"IBM Plex Mono",ui-monospace,Consolas,monospace; color-scheme:light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --paper:#111820; --sheet:#18222c; --ink:#e7edf2;
+  --muted:#9aa8b5; --rule:#2c3a47; --accent:#8fb1e3; --accent-soft:#22324a; color-scheme:dark; } }
+:root[data-theme="dark"] { --paper:#111820; --sheet:#18222c; --ink:#e7edf2; --muted:#9aa8b5; --rule:#2c3a47; --accent:#8fb1e3;
+  --accent-soft:#22324a; color-scheme:dark; }
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--paper); color: var(--ink); font: 400 16px/1.55 var(--body); }
+.wrap { max-width: 1100px; margin: 0 auto; padding-block: 24px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 22px; }
+a { color: var(--accent); }
+.brand { font: 400 1.6rem/1 var(--display); color: var(--accent); text-decoration: none; }
+h1 { font: 400 clamp(1.8rem, 5vw, 2.5rem)/1.15 var(--display); margin: 0; text-wrap: balance; }
+h2 { font: 600 1.1rem var(--body); margin: 0 0 10px; }
+.lead { margin: 0; max-width: 62ch; font-size: 1.05rem; }
+.points { margin: 0; padding-inline-start: 20px; display: grid; gap: 4px; max-width: 70ch; }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 22px; align-items: start; }
+@media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+.sheet { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 18px; display: grid; gap: 12px; min-width: 0; }
+.field { display: grid; gap: 4px; }
+label { font-size: .85rem; font-weight: 500; color: var(--muted); }
+input, select { font: 500 .95rem var(--body); color: var(--ink); background: var(--paper); border: 1px solid var(--rule);
+  border-radius: 6px; padding: 8px 10px; width: 100%; min-width: 0; }
+input[type=color] { padding: 2px; height: 40px; }
+input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+pre { margin: 0; background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; padding: 12px; overflow-x: auto;
+  font: 500 .8rem/1.5 var(--num); direction: ltr; text-align: left; white-space: pre; }
+button { font: 600 .95rem var(--body); background: var(--accent); color: var(--sheet); border: 0; border-radius: 6px; padding: 9px 16px; cursor: pointer; justify-self: start; }
+.hint { margin: 0; font-size: .85rem; color: var(--muted); }
+.mock { border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; background: var(--sheet); min-width: 0; }
+.mock-bar { background: var(--paper); border-bottom: 1px solid var(--rule); padding: 8px 12px; font-size: .8rem; color: var(--muted); direction: ltr; text-align: left; }
+.mock-body { padding: 18px; display: grid; gap: 12px; }
+.mock-body h3 { margin: 0; font: 600 1.2rem var(--body); }
+.mock-body p { margin: 0; color: var(--muted); font-size: .92rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="brand" href="./">שווה?</a>
+  <h1>בדיקת מחיר דירה, באתר שלכם</h1>
+  <p class="lead">לקוחות שמחפשים דירה רוצים לדעת אם המחיר הוגן. תנו להם לבדוק את זה אצלכם, לפי עסקאות אמת של רשות המסים, ושהפנייה הבאה שלהם תגיע אליכם.</p>
+  <ul class="points">
+    <li>בצבעים ובשם של המשרד שלכם</li>
+    <li>כפתור "דברו איתנו" שמוביל לדף יצירת הקשר שלכם</li>
+    <li>שורת קוד אחת, בלי התקנה ובלי תחזוקה. הנתונים מתעדכנים לבד</li>
+  </ul>
+
+  <div class="layout">
+    <div class="sheet">
+      <h2>התאמה</h2>
+      <div class="field"><label for="brand">שם המשרד</label><input id="brand" value="נדל&quot;ן לדוגמה" maxlength="60"></div>
+      <div class="field"><label for="color">צבע</label><input id="color" type="color" value="#0a7d55"></div>
+      <div class="field"><label for="contact">קישור לדף יצירת קשר (https)</label><input id="contact" value="https://example.co.il/contact" dir="ltr"></div>
+      <div class="field"><label for="city">עיר ברירת מחדל (לא חובה)</label><input id="city" placeholder="למשל רעננה"></div>
+      <div class="field"><label for="theme">רקע האתר</label>
+        <select id="theme"><option value="">בהיר</option><option value="dark">כהה</option></select></div>
+      <h2 style="margin-top:6px">הקוד להדבקה באתר</h2>
+      <pre id="code"></pre>
+      <button type="button" id="copy">העתקת הקוד</button>
+      <p class="hint" id="copyMsg">מדביקים את הקוד בעמוד שבו הכלי צריך להופיע. ב־Wix: "הוספה ← הטמעת קוד". ב־WordPress: בלוק "HTML מותאם".</p>
+    </div>
+
+    <div class="mock" aria-label="תצוגה מקדימה">
+      <div class="mock-bar" id="mockUrl">https://example.co.il</div>
+      <div class="mock-body">
+        <h3 id="mockTitle">נדל"ן לדוגמה</h3>
+        <p>כך הכלי ייראה בתוך האתר שלכם.</p>
+        <div id="preview"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const BASE = new URL("./", location.href).href;
+const esc = (s) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+let timer;
+
+function attrs() {
+  const a = { brand: $("brand").value.trim(), color: $("color").value, contact: $("contact").value.trim(),
+              city: $("city").value.trim(), theme: $("theme").value };
+  if (!/^https:\/\//.test(a.contact)) a.contact = "";
+  return a;
+}
+function render() {
+  const a = attrs();
+  const lines = Object.entries(a).filter(([, v]) => v).map(([k, v]) => `     data-${k}="${esc(v)}"`);
+  $("code").textContent = `<div class="shave-widget"\n${lines.join("\n")}></div>\n<script src="${BASE}embed.js" async><\/script>`;
+  $("mockTitle").textContent = a.brand || "האתר שלכם";
+  $("mockUrl").textContent = a.contact ? new URL(a.contact).origin : "https://example.co.il";
+  clearTimeout(timer);
+  timer = setTimeout(() => {
+    const box = $("preview"); box.innerHTML = "";
+    const div = document.createElement("div"); div.className = "shave-widget";
+    Object.entries(a).forEach(([k, v]) => v && div.setAttribute("data-" + k, v));
+    box.appendChild(div);
+    const s = document.createElement("script"); s.src = BASE + "embed.js?preview=" + Date.now(); box.appendChild(s);
+  }, 350);
+}
+["brand", "color", "contact", "city", "theme"].forEach((id) => $(id).addEventListener("input", render));
+$("copy").addEventListener("click", async () => {
+  try { await navigator.clipboard.writeText($("code").textContent); $("copyMsg").textContent = "הקוד הועתק. הדביקו אותו באתר שלכם."; }
+  catch (e) { const r = document.createRange(); r.selectNodeContents($("code")); getSelection().removeAllRanges(); getSelection().addRange(r);
+    $("copyMsg").textContent = "הקוד מסומן. לחצו Command+C (או Ctrl+C) להעתקה."; }
+});
+render();
+</script>
+</body>
+</html>
