@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>שווה?</title>
+<meta name="description" content="בודקים אם המחיר המבוקש לדירה הוגן, לפי עסקאות אמת שנרשמו ברשות המסים.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Hebrew:wght@400;500;600&family=IBM+Plex+Mono:wght@500&family=Suez+One&display=swap">
+<style>
+/* Layout: a single column "registry slip" — form on top, the verdict as a stamped result slip below. */
+:root {
+  --paper: #f3f5f6;      /* page */
+  --sheet: #ffffff;      /* form + result surfaces */
+  --ink: #17212b;        /* text */
+  --muted: #5d6b78;      /* secondary text */
+  --rule: #d5dce2;       /* hairlines */
+  --accent: #2b4c7e;     /* registry-ink blue */
+  --accent-soft: #e3eaf4;
+  --good: #1f7a4d;  --good-soft: #e1f2e9;
+  --warn: #9a6400;  --warn-soft: #fbf0d9;
+  --bad: #b23a2e;   --bad-soft: #f8e3e0;
+  --display: "Suez One", "IBM Plex Sans Hebrew", Arial, sans-serif;
+  --body: "IBM Plex Sans Hebrew", "Segoe UI", Arial, sans-serif;
+  --num: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #111820; --sheet: #18222c; --ink: #e7edf2; --muted: #9aa8b5; --rule: #2c3a47;
+  --accent: #8fb1e3; --accent-soft: #22324a;
+  --good: #6fcf9c; --good-soft: #173527; --warn: #e8b660; --warn-soft: #3a2e15;
+  --bad: #f08a7e; --bad-soft: #3d1f1b; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --paper: #111820; --sheet: #18222c; --ink: #e7edf2; --muted: #9aa8b5; --rule: #2c3a47;
+  --accent: #8fb1e3; --accent-soft: #22324a;
+  --good: #6fcf9c; --good-soft: #173527; --warn: #e8b660; --warn-soft: #3a2e15;
+  --bad: #f08a7e; --bad-soft: #3d1f1b; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body { background: var(--paper); color: var(--ink); font: 400 16px/1.55 var(--body); }
+.wrap { max-width: 880px; margin: 0 auto; padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 22px; }
+.num { font-family: var(--num); font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
+
+header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.brand { font: 400 clamp(2.4rem, 7vw, 3.4rem)/1 var(--display); color: var(--accent); margin: 0; letter-spacing: -.01em; }
+.tagline { margin: 6px 0 0; color: var(--muted); max-width: 46ch; text-wrap: balance; }
+.stamp-date { color: var(--muted); font-size: .85rem; text-align: left; }
+
+.banner { background: var(--warn-soft); color: var(--warn); border: 1px solid currentColor; border-radius: 6px;
+  padding: 10px 14px; font-weight: 600; }
+
+form.sheet, .result { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 22px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px 16px; }
+.field { display: grid; gap: 5px; min-width: 0; }
+.field.wide { grid-column: span 2; }
+label { font-size: .86rem; font-weight: 500; color: var(--muted); }
+input, select { font: 500 1rem var(--body); color: var(--ink); background: var(--paper); border: 1px solid var(--rule);
+  border-radius: 6px; padding: 9px 11px; width: 100%; min-width: 0; }
+input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.check { display: flex; align-items: center; gap: 8px; align-self: end; padding-bottom: 10px; }
+.check input { width: auto; }
+.check label { color: var(--ink); font-size: .95rem; }
+.asking { margin-top: 18px; padding-top: 18px; border-top: 1px dashed var(--rule); display: flex; gap: 14px; flex-wrap: wrap; align-items: end; }
+.asking .field { flex: 1 1 220px; }
+.asking input { font: 500 1.25rem var(--num); direction: ltr; text-align: right; }
+button.primary { font: 600 1rem var(--body); background: var(--accent); color: var(--sheet); border: 0; border-radius: 6px;
+  padding: 12px 22px; cursor: pointer; flex: 0 0 auto; }
+button.primary:hover { filter: brightness(1.08); }
+.hint { font-size: .82rem; color: var(--muted); margin: 0; }
+.example-tag { font-size: .78rem; font-weight: 600; letter-spacing: .04em; color: var(--accent); background: var(--accent-soft);
+  border-radius: 999px; padding: 2px 10px; }
+
+.result { display: grid; gap: 22px; }
+.verdict-row { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+.stamp { font: 400 1.35rem/1 var(--display); padding: 10px 16px; border: 2px solid currentColor; border-radius: 6px;
+  transform: rotate(-2deg); }
+.lv-low { color: var(--good); background: var(--good-soft); }
+.lv-fair { color: var(--good); background: var(--good-soft); }
+.lv-upper { color: var(--warn); background: var(--warn-soft); }
+.lv-high, .lv-very_high { color: var(--bad); background: var(--bad-soft); }
+.verdict-text { flex: 1 1 260px; margin: 0; font-size: 1.05rem; text-wrap: pretty; }
+
+.figures { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+.fig { display: grid; gap: 2px; min-width: 0; }
+.fig .k { font-size: .82rem; color: var(--muted); }
+.fig .v { font: 500 1.4rem/1.25 var(--num); font-variant-numeric: tabular-nums; direction: ltr; text-align: right; }
+.fig .s { font-size: .82rem; color: var(--muted); }
+
+.scale { position: relative; height: 64px; margin: 6px 4px 0; }
+.scale .track { position: absolute; inset: 26px 0 auto; height: 10px; border-radius: 5px; background: var(--rule); }
+.scale .band { position: absolute; top: 26px; height: 10px; border-radius: 5px; background: var(--accent-soft); border: 1px solid var(--accent); }
+.scale .mark { position: absolute; top: 18px; width: 2px; height: 26px; transform: translateX(50%); }
+.scale .mark span { position: absolute; top: 30px; right: 50%; transform: translateX(50%); white-space: nowrap; font-size: .78rem; }
+.scale .mark.est { background: var(--accent); }
+.scale .mark.ask { background: var(--ink); top: 12px; height: 38px; }
+.scale .mark.ask span { top: -18px; font-weight: 600; }
+.scale-ends { display: flex; justify-content: space-between; font-size: .78rem; color: var(--muted); }
+
+h2 { font: 600 1.05rem var(--body); margin: 0 0 8px; }
+.split { display: grid; grid-template-columns: minmax(0, 1fr); gap: 26px; }
+@media (max-width: 680px) { .field.wide { grid-column: auto; } }
+svg.trend { width: 100%; height: auto; display: block; direction: ltr; max-height: 220px; }
+svg.trend text { fill: var(--muted); font: 11px var(--num); }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+th { text-align: right; font-weight: 500; color: var(--muted); font-size: .8rem; border-bottom: 1px solid var(--rule); padding: 6px 8px; white-space: nowrap; }
+td { border-bottom: 1px solid var(--rule); padding: 7px 8px; white-space: nowrap; }
+td.n { font-family: var(--num); font-variant-numeric: tabular-nums; direction: ltr; text-align: right; }
+.empty { color: var(--muted); font-size: .92rem; margin: 0; }
+
+.cta { display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap;
+  border-top: 1px solid var(--rule); padding-top: 18px; }
+.cta p { margin: 0; flex: 1 1 280px; }
+a.button { font-weight: 600; color: var(--accent); border: 1.5px solid var(--accent); border-radius: 6px; padding: 10px 18px; text-decoration: none; }
+
+footer { color: var(--muted); font-size: .82rem; display: grid; gap: 6px; }
+footer p { margin: 0; max-width: 75ch; }
+.error { color: var(--bad); font-weight: 500; }
+input.invalid { border-color: var(--bad); background: var(--bad-soft); }
+.field-err { color: var(--bad); font-size: .8rem; font-weight: 500; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1 class="brand">שווה?</h1>
+      <p class="tagline">בודקים אם המחיר המבוקש לדירה הוגן, לפי עסקאות אמת שנרשמו ברשות המסים.</p>
+    </div>
+    <div class="stamp-date" id="dataDate"></div>
+  </header>
+
+  <div class="banner" id="testBanner" hidden>נתוני דמה לבדיקה בלבד. המחירים באתר הזה מומצאים.</div>
+
+  <form class="sheet" id="form" autocomplete="off" novalidate>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap">
+      <h2 style="margin:0">פרטי הדירה</h2>
+      <span class="example-tag" id="exampleTag" hidden>דוגמה, אפשר לשנות</span>
+    </div>
+    <div class="grid">
+      <div class="field"><label for="city">עיר</label>
+        <input id="city" list="cityList" required><datalist id="cityList"></datalist></div>
+      <div class="field"><label for="street">רחוב</label>
+        <input id="street" list="streetList"><datalist id="streetList"></datalist></div>
+      <div class="field"><label for="type">סוג דירה</label>
+        <select id="type">
+          <option value="regular">דירה בבניין</option><option value="garden">דירת גן</option>
+          <option value="penthouse">דירת גג / פנטהאוז</option><option value="duplex">דופלקס</option>
+        </select></div>
+      <div class="field"><label for="rooms">חדרים</label>
+        <input id="rooms" type="number" step="0.5" min="1" max="12" inputmode="decimal"></div>
+      <div class="field"><label for="area">שטח (מ"ר)</label>
+        <input id="area" type="number" min="20" max="500" inputmode="numeric" placeholder="לפי מספר החדרים"></div>
+      <div class="field"><label for="floor">קומה</label>
+        <input id="floor" type="number" min="0" max="80" inputmode="numeric" placeholder="0 = קרקע" aria-describedby="floorErr">
+        <span class="field-err" id="floorErr" hidden></span></div>
+      <div class="field"><label for="bfloors">קומות בבניין</label>
+        <input id="bfloors" type="number" min="1" max="80" inputmode="numeric" placeholder="לא חובה"></div>
+      <div class="field"><label for="built">שנת בנייה</label>
+        <input id="built" type="number" min="1900" max="2035" inputmode="numeric" placeholder="לא חובה"></div>
+      <div class="field"><label for="newStatus">מצב הדירה</label>
+        <select id="newStatus">
+          <option value="">יד שנייה</option>
+          <option value="ready">חדשה מקבלן, מוכנה לכניסה</option>
+          <option value="presale">חדשה מקבלן, על הנייר</option>
+        </select></div>
+    </div>
+    <p class="hint" style="margin-top:12px">המחיר נקבע בעיקר לפי השטח במ"ר. אם השטח לא משתנה, עוד חדר כמעט לא משנה את המחיר, כי החדרים פשוט קטנים יותר. לא יודעים את השטח? השאירו ריק, ונחשב לפי מספר החדרים.</p>
+    <div class="asking">
+      <div class="field"><label for="asking">מחיר מבוקש (₪)</label>
+        <input id="asking" inputmode="numeric" required placeholder="2,450,000"></div>
+      <button class="primary" type="submit">בדיקת מחיר</button>
+    </div>
+    <p class="hint" id="formMsg" style="margin-top:10px"></p>
+  </form>
+
+  <section class="result" id="result" hidden aria-live="polite">
+    <div class="verdict-row">
+      <div class="stamp" id="stamp"></div>
+      <p class="verdict-text" id="verdictText"></p>
+    </div>
+
+    <div>
+      <div class="scale" id="scale">
+        <div class="track"></div><div class="band" id="band"></div>
+        <div class="mark est" id="markEst"><span>הערכה</span></div>
+        <div class="mark ask" id="markAsk"><span>מבוקש</span></div>
+      </div>
+      <div class="scale-ends"><span class="num" id="scaleMin"></span><span class="num" id="scaleMax"></span></div>
+    </div>
+
+    <div class="figures">
+      <div class="fig"><span class="k">שווי משוער</span><span class="v" id="fValue"></span><span class="s" id="fRange"></span></div>
+      <div class="fig"><span class="k">מחיר למ"ר</span><span class="v" id="fPpsqm"></span><span class="s" id="fStreetPpsqm"></span></div>
+      <div class="fig"><span class="k">פער מהמחיר המבוקש</span><span class="v" id="fDiff"></span><span class="s" id="fDiffAbs"></span></div>
+    </div>
+
+    <div class="split">
+      <div>
+        <h2 id="trendTitle">מחיר ממוצע למ"ר בעיר</h2>
+        <svg class="trend" id="trend" viewBox="0 0 640 170" role="img"></svg>
+      </div>
+      <div style="min-width:0">
+        <h2>עסקאות דומות ברחוב</h2>
+        <div class="table-wrap" id="compsWrap"></div>
+      </div>
+    </div>
+
+    <div class="cta" id="cta" hidden>
+      <p><strong>רוצים דוח מלא?</strong> כל העסקאות ברחוב, מגמת מחירים בשכונה וטיעונים מוכנים למשא ומתן, בקובץ PDF.</p>
+      <a class="button" id="ctaLink" href="#" target="_blank" rel="noopener">להזמנת דוח</a>
+    </div>
+  </section>
+
+  <footer>
+    <p>ההערכה היא חישוב סטטיסטי על עסקאות עבר, לא שמאות ולא ייעוץ. לפני החלטה על רכישה כדאי להתייעץ עם שמאי מקרקעין.</p>
+    <p id="accuracy"></p>
+    <p id="sourceLine"></p>
+  </footer>
+</div>
+
+<script>
+/* ---- settings you can change ---- */
+const CONFIG = {
+  // Link for the paid full report (payment page / order form). Leave empty to hide the offer.
+  reportUrl: "",
+};
+/* --------------------------------- */
+
+const $ = (id) => document.getElementById(id);
+const nf = new Intl.NumberFormat("he-IL", { maximumFractionDigits: 0 });
+const ils = (v) => "₪" + nf.format(Math.round(v / 1000) * 1000);
+let META = null;
+const cityCache = {};
+
+async function loadJSON(path) {
+  const r = await fetch(path, { cache: "no-cache" });
+  if (!r.ok) throw new Error(path + " " + r.status);
+  return r.json();
+}
+function cityByName(name) {
+  return META.cities.find((c) => c.name === (name || "").trim());
+}
+async function getCity(c) {
+  if (!cityCache[c.id]) cityCache[c.id] = await loadJSON("data/cities/" + c.id + ".json?v=" + META.version);
+  return cityCache[c.id];
+}
+function fillStreets(city) {
+  const list = $("streetList");
+  list.innerHTML = "";
+  Object.entries(city.streets).sort((a, b) => b[1][1] - a[1][1]).forEach(([s]) => {
+    const o = document.createElement("option"); o.value = s; list.appendChild(o);
+  });
+}
+function readForm() {
+  const n = (id) => { const v = $(id).value.replace(/[^\d.]/g, ""); return v === "" ? null : Number(v); };
+  return {
+    street: $("street").value.trim(), rooms: n("rooms"), area: n("area"), floor: n("floor"),
+    buildingFloors: n("bfloors"), yearBuilt: n("built"), newStatus: $("newStatus").value,
+    type: $("type").value, asking: n("asking"), areaGuessed: false,
+  };
+}
+function typicalArea(rooms) {
+  const t = META.typical_area || {};
+  const keys = Object.keys(t).map(Number).sort((p, q) => p - q);
+  if (!rooms || !keys.length) return null;
+  const k = keys.reduce((best, x) => Math.abs(x - rooms) < Math.abs(best - rooms) ? x : best, keys[0]);
+  return t[String(k)] * (rooms / k);
+}
+
+const VERDICT = {
+  low: ["מתחת לשוק", "המחיר המבוקש נמוך מהטווח הצפוי. כדאי לבדוק למה: מצב הדירה, זכויות, או בעיה ברישום."],
+  fair: ["מחיר הוגן", "המחיר המבוקש קרוב לשווי המשוער לפי עסקאות דומות."],
+  upper: ["בקצה העליון", "המחיר בתוך הטווח הסביר, אבל בחלק היקר שלו. יש מקום למשא ומתן."],
+  high: ["מעל השוק", "המחיר המבוקש גבוה מהטווח שעסקאות דומות נסגרו בו."],
+  very_high: ["יקר משמעותית", "המחיר המבוקש גבוה בהרבה ממה שדירות דומות נמכרו בו."],
+};
+
+async function run(e) {
+  if (e) e.preventDefault();
+  $("formMsg").textContent = ""; $("formMsg").className = "hint";
+  const c = cityByName($("city").value);
+  const a = readForm();
+  if (!c) return fail("לא מצאנו את העיר. בחרו עיר מהרשימה.");
+  const floorErr = floorProblem();
+  if (floorErr) { $("floor").focus(); return fail(floorErr); }
+  if (!a.area && a.rooms) { a.area = Math.round(typicalArea(a.rooms)); a.areaGuessed = true; }
+  if (!a.area || a.area < 20) return fail("נא למלא שטח במ\"ר או מספר חדרים.");
+  if (!a.asking || a.asking < 100000) return fail("נא למלא מחיר מבוקש בשקלים.");
+  const city = await getCity(c);
+  let est;
+  try { est = Estimator.estimate(META, city, a); }
+  catch (err) {
+    return fail(err.code === "VERSION_MISMATCH"
+      ? "האתר התעדכן בזמן שהדף היה פתוח. רעננו את הדף כדי לקבל את הגרסה החדשה."
+      : "משהו השתבש בחישוב. נסו לרענן את הדף.");
+  }
+  if (!isFinite(est.value) || est.value <= 0) return fail("לא הצלחנו לחשב הערכה לנתונים האלה. בדקו את השטח ואת שנת הבנייה.");
+  const v = Estimator.verdict(a.asking, est);
+  render(city, a, est, v);
+}
+/* the floor can't be above the top floor of the building */
+function floorProblem() {
+  const f = $("floor").value === "" ? null : Number($("floor").value);
+  const b = $("bfloors").value === "" ? null : Number($("bfloors").value);
+  $("floor").max = b != null && b > 0 ? b : 80;
+  const bad = f != null && b != null && f > b;
+  ["floor", "bfloors"].forEach((id) => {
+    $(id).classList.toggle("invalid", bad);
+    $(id).setAttribute("aria-invalid", bad ? "true" : "false");
+  });
+  $("floorErr").hidden = !bad;
+  $("floorErr").textContent = bad ? `בבניין יש ${b} קומות, אז הקומה לא יכולה להיות ${f}.` : "";
+  return bad ? `הקומה (${f}) גבוהה ממספר הקומות בבניין (${b}). תקנו אחד מהם.` : null;
+}
+
+function fail(msg) { $("formMsg").textContent = msg; $("formMsg").className = "hint error"; }
+
+function render(city, a, est, v) {
+  $("result").hidden = false;
+  const [title, text] = VERDICT[v.level];
+  $("stamp").textContent = title; $("stamp").className = "stamp lv-" + v.level;
+  let note = "";
+  if (!a.street) note = " ההערכה לפי ממוצע העיר, כי לא נבחר רחוב.";
+  else if (!est.streetKnown) note = " הרחוב לא נמצא במאגר, ולכן ההערכה לפי ממוצע העיר.";
+  else if (est.streetDeals < 5) note = " ברחוב יש מעט עסקאות, ולכן הטווח רחב יותר.";
+  if (a.newStatus) note += " בדירות חדשות במאגר יש גם דירות בהנחה ממשלתית (מחיר למשתכן), ולכן בשוק החופשי המחיר עשוי להיות גבוה במעט מההערכה.";
+  if (a.areaGuessed) note += ` השטח לא הוזן, אז הנחנו ${a.area} מ"ר, שטח טיפוסי ל־${a.rooms} חדרים.`;
+  $("verdictText").textContent = text + note;
+
+  $("fValue").textContent = ils(est.value);
+  $("fRange").textContent = "טווח סביר: " + ils(est.low) + " עד " + ils(est.high);
+  $("fPpsqm").textContent = "₪" + nf.format(est.ppsqm);
+  $("fStreetPpsqm").textContent = est.streetMedianPpsqm
+    ? "חציון ברחוב בשנים האחרונות: ₪" + nf.format(est.streetMedianPpsqm) : "";
+  const pct = Math.round(v.diff * 100);
+  $("fDiff").textContent = (pct > 0 ? "+" : "") + pct + "%";
+  $("fDiffAbs").textContent = (a.asking >= est.value ? "יותר מהשווי ב־" : "פחות מהשווי ב־") + ils(Math.abs(a.asking - est.value));
+
+  const lo = Math.min(est.low, a.asking) * 0.92, hi = Math.max(est.high, a.asking) * 1.06;
+  const pos = (x) => ((x - lo) / (hi - lo)) * 100;           // percent from the right (RTL)
+  $("band").style.right = pos(est.low) + "%"; $("band").style.width = (pos(est.high) - pos(est.low)) + "%";
+  $("markEst").style.right = pos(est.value) + "%"; $("markAsk").style.right = pos(a.asking) + "%";
+  $("scaleMin").textContent = ils(lo); $("scaleMax").textContent = ils(hi);
+
+  drawTrend(city);
+  drawComps(Estimator.similarDeals(city, a, 8), a);
+  if (CONFIG.reportUrl) { $("cta").hidden = false; $("ctaLink").href = CONFIG.reportUrl; }
+}
+
+function drawTrend(city) {
+  const t = city.trend, svg = $("trend");
+  $("trendTitle").textContent = "מחיר טיפוסי למ\"ר ב" + city.name;
+  if (!t || t.length < 2) { svg.innerHTML = ""; return; }
+  const W = 640, H = 170, L = 8, R = 64, T = 14, B = 24;
+  const ys = t.map((r) => r[1]), min = Math.min(...ys), max = Math.max(...ys);
+  const x = (i) => L + (i / (t.length - 1)) * (W - L - R);
+  const y = (v) => T + (1 - (v - min) / (max - min || 1)) * (H - T - B);
+  const pts = t.map((r, i) => x(i).toFixed(1) + "," + y(r[1]).toFixed(1)).join(" ");
+  const last = t[t.length - 1], first = t[0];
+  const years = []; t.forEach((r, i) => { if (r[0].endsWith("Q1")) years.push([i, r[0].slice(0, 4)]); });
+  const step = Math.ceil(years.length / 4);
+  svg.innerHTML =
+    [min, max].map((v) => `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--rule)"/>` +
+      `<text x="${W - R + 6}" y="${y(v) + 4}">${nf.format(v)}</text>`).join("") +
+    `<polygon points="${x(0)},${H - B} ${pts} ${x(t.length - 1)},${H - B}" fill="var(--accent-soft)"/>` +
+    `<polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2"/>` +
+    `<circle cx="${x(t.length - 1)}" cy="${y(last[1])}" r="4" fill="var(--accent)"/>` +
+    years.filter((_, k) => k % step === 0).map(([i, yr]) => `<text x="${x(i)}" y="${H - 6}" text-anchor="${i === 0 ? "start" : "middle"}">${yr}</text>`).join("");
+  const growth = Math.round((last[1] / first[1] - 1) * 100);
+  svg.setAttribute("aria-label", `מחיר למ"ר עלה ב־${growth}% מ־${first[0]} עד ${last[0]}`);
+}
+
+function drawComps(rows, a) {
+  const w = $("compsWrap");
+  if (!a.street) { w.innerHTML = '<p class="empty">בחרו רחוב כדי לראות עסקאות דומות.</p>'; return; }
+  if (!rows.length) { w.innerHTML = '<p class="empty">אין עסקאות דומות ברחוב הזה בשנים האחרונות.</p>'; return; }
+  const d = (s) => s.slice(8, 10) + "/" + s.slice(5, 7) + "/" + s.slice(2, 4);
+  w.innerHTML = "<table><thead><tr><th>כתובת</th><th>תאריך</th><th>חדרים</th><th>קומה</th><th>מ\"ר</th><th>מחיר</th><th>במחירי היום</th></tr></thead><tbody>" +
+    rows.map((r) => `<tr><td>${esc(r.address || a.street)}</td><td class="n">${d(r.date)}</td><td class="n">${r.rooms ?? "–"}</td>` +
+      `<td class="n">${r.floor == null ? "–" : r.floor === 0 ? "קרקע" : r.floor}</td><td class="n">${r.area}</td><td class="n">${ils(r.price)}</td><td class="n">${ils(r.adjPrice)}</td></tr>`).join("") +
+    "</tbody></table>";
+}
+function esc(s) { return s.replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch])); }
+
+async function init() {
+  try {
+    META = await loadJSON("data/meta.json");
+    await new Promise((ok, bad) => {            // load the matching calculation code, never a cached old copy
+      const sc = document.createElement("script");
+      sc.src = "estimator.js?v=" + (META.version || META.generated);
+      sc.onload = ok; sc.onerror = bad;
+      document.head.appendChild(sc);
+    });
+  }
+  catch (err) { return fail("לא הצלחנו לטעון את נתוני העסקאות. אם פתחתם את הקובץ ישירות, הריצו את האתר דרך שרת מקומי (ראו README)."); }
+  $("testBanner").hidden = !META.test_data;
+  $("dataDate").innerHTML = 'מבוסס על <span class="num">' + nf.format(META.n_deals) + "</span> עסקאות<br>מחירים מעודכנים לרבעון " + META.latest_quarter.slice(5) + "/" + META.latest_quarter.slice(0, 4);
+  const m = META.metrics;
+  $("accuracy").textContent = `דיוק המודל בבדיקה על ${nf.format(m.test_deals)} עסקאות שלא שימשו לאימון: טעות חציונית של ${Math.round(m.median_abs_pct_error * 100)}%, ו־${Math.round(m.share_within_10pct * 100)}% מההערכות בטווח של 10% מהמחיר בפועל.`;
+  let src = "מקור הנתונים: " + META.source + ".";
+  if (META.cbs_update && META.deals_through_quarter) {
+    const q = META.deals_through_quarter;
+    src += ` העסקאות במאגר מגיעות עד רבעון ${q.slice(5)}/${q.slice(0, 4)}. מאז, המחירים מעודכנים לפי מדד מחירי הדירות של הלמ"ס, לפי המחוז של כל עיר.`;
+  }
+  $("sourceLine").textContent = src;
+  const cl = $("cityList");
+  META.cities.forEach((c) => { const o = document.createElement("option"); o.value = c.name; cl.appendChild(o); });
+
+  $("city").addEventListener("change", async () => {
+    const c = cityByName($("city").value);
+    $("street").value = ""; $("streetList").innerHTML = "";
+    if (c) fillStreets(await getCity(c));
+  });
+  $("asking").addEventListener("input", (e) => {
+    const digits = e.target.value.replace(/\D/g, "");
+    e.target.value = digits ? nf.format(Number(digits)) : "";
+  });
+  $("form").addEventListener("submit", run);
+  ["floor", "bfloors"].forEach((id) => $(id).addEventListener("input", () => {
+    if (!floorProblem() && $("formMsg").classList.contains("error")) { $("formMsg").textContent = ""; }
+  }));
+
+  // open in a working state with an example
+  const c0 = META.cities[0], city0 = await getCity(c0);
+  fillStreets(city0);
+  const street0 = Object.entries(city0.streets).sort((p, q) => q[1][1] - p[1][1])[0][0];
+  Object.assign(document.getElementById("city"), { value: c0.name });
+  $("street").value = street0; $("rooms").value = 4; $("area").value = 100; $("floor").value = 3;
+  $("bfloors").value = 6; $("built").value = 1995;
+  try {
+    const ex = Estimator.estimate(META, city0, readForm());
+    $("asking").value = nf.format(Math.round(ex.value * 1.12 / 10000) * 10000);
+  } catch (err) { $("asking").value = "2,500,000"; }
+  $("exampleTag").hidden = false;
+  ["city", "street", "rooms", "area", "floor", "bfloors", "built", "asking", "newStatus"].forEach((id) =>
+    $(id).addEventListener("input", () => { $("exampleTag").hidden = true; }, { once: true }));
+  run();
+}
+init();
+</script>
+</body>
+</html>

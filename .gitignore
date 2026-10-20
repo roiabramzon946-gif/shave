@@ -1,0 +1,14 @@
+# Python environment and caches
+.venv/
+venv/
+__pycache__/
+*.pyc
+.DS_Store
+
+# raw and intermediate data (large, re-downloadable)
+data/raw/
+data/cbs_raw/
+data/govmap_cache/
+data/govmap_cache_test/
+data/report.txt
+*.part
