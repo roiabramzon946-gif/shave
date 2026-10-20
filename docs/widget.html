@@ -142,7 +142,27 @@ function applySettings() {
 }
 
 async function loadJSON(p) { const r = await fetch(p, { cache: "no-cache" }); if (!r.ok) throw new Error(p); return r.json(); }
-const cityByName = (n) => META.cities.find((c) => c.name === (n || "").trim());
+/* city names as people type them: "תל אביב", "קרית אונו", "הרצליה", "ת"א" */
+const CITY_ALIASES = { "תא": "תל אביב-יפו", "פת": "פתח תקווה", "ראשלצ": "ראשון לציון", "בש": "באר שבע",
+  "מודיעין": "מודיעין-מכבים-רעות", "יפו": "תל אביב-יפו", "גני תקוה": "גני תקווה" };
+function cityKey(s) { return (s || "").replace(/["'׳״`]/g, "").replace(/[\s\-־]+/g, "").replace(/[יו]/g, ""); }
+function findCity(name) {
+  const t = (name || "").trim();
+  if (!t || !META) return undefined;
+  const exact = META.cities.find((c) => c.name === t);
+  if (exact) return exact;
+  const k = cityKey(t);
+  const alias = Object.keys(CITY_ALIASES).find((a) => cityKey(a) === k);
+  if (alias) return META.cities.find((c) => c.name === CITY_ALIASES[alias]);
+  const same = META.cities.filter((c) => cityKey(c.name) === k);
+  if (same.length === 1) return same[0];
+  if (k.length >= 3) {                       // "תל אביב" -> "תל אביב-יפו", only when it points to one city
+    const pre = META.cities.filter((c) => cityKey(c.name).startsWith(k));
+    if (pre.length === 1) return pre[0];
+  }
+  return undefined;
+}
+const cityByName = (n) => findCity(n);
 async function getCity(c) { return cache[c.id] || (cache[c.id] = await loadJSON("data/cities/" + c.id + ".json?v=" + META.version)); }
 function fillStreets(city) {
   const l = $("streetList"); l.innerHTML = "";
@@ -157,6 +177,7 @@ async function run(e) {
   ["floor", "bfloors"].forEach((id) => $(id).classList.remove("invalid"));
   const c = cityByName($("city").value);
   if (!c) return fail("בחרו עיר מהרשימה.");
+  if ($("city").value !== c.name) $("city").value = c.name;
   const a = { street: $("street").value.trim(), area: num("area"), floor: num("floor"), buildingFloors: num("bfloors"),
               yearBuilt: num("built"), newStatus: $("newStatus").value, type: "regular", rooms: null };
   const asking = num("asking");
@@ -166,7 +187,8 @@ async function run(e) {
     return fail(`בבניין יש ${a.buildingFloors} קומות, אז הקומה לא יכולה להיות ${a.floor}.`);
   }
   if (!asking || asking < 100000) return fail("נא למלא מחיר מבוקש בשקלים.");
-  const city = await getCity(c);
+  let city;
+  try { city = await getCity(c); } catch (err) { return fail("לא הצלחנו לטעון את נתוני העיר. בדקו את החיבור לאינטרנט ונסו שוב."); }
   let est;
   try { est = Estimator.estimate(META, city, a); } catch (err) { return fail("האתר התעדכן. רעננו את הדף."); }
   if (!isFinite(est.value)) return fail("לא הצלחנו לחשב הערכה לנתונים האלה.");
@@ -196,7 +218,7 @@ async function init() {
     await new Promise((ok, bad) => { const s = document.createElement("script"); s.src = "estimator.js?v=" + META.version; s.onload = ok; s.onerror = bad; document.head.appendChild(s); });
   } catch (err) { return fail("לא הצלחנו לטעון את הנתונים. נסו שוב מאוחר יותר."); }
   META.cities.forEach((c) => { const o = document.createElement("option"); o.value = c.name; $("cityList").appendChild(o); });
-  $("city").addEventListener("change", async () => { const c = cityByName($("city").value); $("street").value = ""; if (c) fillStreets(await getCity(c)); });
+  $("city").addEventListener("change", async () => { const c = cityByName($("city").value); if (c) $("city").value = c.name; $("street").value = ""; if (c) fillStreets(await getCity(c)); });
   $("asking").addEventListener("input", (e) => { const d = e.target.value.replace(/\D/g, ""); e.target.value = d ? nf.format(Number(d)) : ""; });
   $("form").addEventListener("submit", run);
   const pre = cityByName(P.get("city"));

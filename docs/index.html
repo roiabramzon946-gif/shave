@@ -310,9 +310,27 @@ async function loadJSON(path) {
   if (!r.ok) throw new Error(path + " " + r.status);
   return r.json();
 }
-function cityByName(name) {
-  return META.cities.find((c) => c.name === (name || "").trim());
+/* city names as people type them: "תל אביב", "קרית אונו", "הרצליה", "ת"א" */
+const CITY_ALIASES = { "תא": "תל אביב-יפו", "פת": "פתח תקווה", "ראשלצ": "ראשון לציון", "בש": "באר שבע",
+  "מודיעין": "מודיעין-מכבים-רעות", "יפו": "תל אביב-יפו", "גני תקוה": "גני תקווה" };
+function cityKey(s) { return (s || "").replace(/["'׳״`]/g, "").replace(/[\s\-־]+/g, "").replace(/[יו]/g, ""); }
+function findCity(name) {
+  const t = (name || "").trim();
+  if (!t || !META) return undefined;
+  const exact = META.cities.find((c) => c.name === t);
+  if (exact) return exact;
+  const k = cityKey(t);
+  const alias = Object.keys(CITY_ALIASES).find((a) => cityKey(a) === k);
+  if (alias) return META.cities.find((c) => c.name === CITY_ALIASES[alias]);
+  const same = META.cities.filter((c) => cityKey(c.name) === k);
+  if (same.length === 1) return same[0];
+  if (k.length >= 3) {                       // "תל אביב" -> "תל אביב-יפו", only when it points to one city
+    const pre = META.cities.filter((c) => cityKey(c.name).startsWith(k));
+    if (pre.length === 1) return pre[0];
+  }
+  return undefined;
 }
+function cityByName(name) { return findCity(name); }
 async function getCity(c) {
   if (!cityCache[c.id]) cityCache[c.id] = await loadJSON("data/cities/" + c.id + ".json?v=" + META.version);
   return cityCache[c.id];
@@ -354,12 +372,14 @@ async function run(e) {
   const c = cityByName($("city").value);
   const a = readForm();
   if (!c) return fail("לא מצאנו את העיר. בחרו עיר מהרשימה.");
+  if ($("city").value !== c.name) $("city").value = c.name;
   const floorErr = floorProblem();
   if (floorErr) { $("floor").focus(); return fail(floorErr); }
   if (!a.area && a.rooms) { a.area = Math.round(typicalArea(a.rooms)); a.areaGuessed = true; }
   if (!a.area || a.area < 20) return fail("נא למלא שטח במ\"ר או מספר חדרים.");
   if (!a.asking || a.asking < 100000) return fail("נא למלא מחיר מבוקש בשקלים.");
-  const city = await getCity(c);
+  let city;
+  try { city = await getCity(c); } catch (err) { return fail("לא הצלחנו לטעון את נתוני העיר. בדקו את החיבור לאינטרנט ונסו שוב."); }
   let est;
   try { est = Estimator.estimate(META, city, a); }
   catch (err) {
@@ -511,8 +531,9 @@ async function init() {
 
   $("city").addEventListener("change", async () => {
     const c = cityByName($("city").value);
+    if (c && $("city").value !== c.name) $("city").value = c.name;
     $("street").value = ""; $("streetList").innerHTML = "";
-    if (c) fillStreets(await getCity(c));
+    if (c) { try { fillStreets(await getCity(c)); } catch (err) { fail("לא הצלחנו לטעון את נתוני העיר. בדקו את החיבור לאינטרנט ונסו שוב."); } }
   });
   $("asking").addEventListener("input", (e) => {
     const digits = e.target.value.replace(/\D/g, "");
