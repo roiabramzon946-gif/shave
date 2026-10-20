@@ -120,7 +120,15 @@ def load_raw(test: bool) -> pd.DataFrame:
         part = pd.read_csv(f, dtype=str, encoding="utf-8-sig", low_memory=False)
         part.columns = [c.strip().lower() for c in part.columns]
         frames.append(part)
-    return pd.concat(frames, ignore_index=True)
+    raw = pd.concat(frames, ignore_index=True)
+    # the odata files overlap: the same deal (same deal number) can appear in two files
+    if "keyvalue" in raw.columns:
+        k = raw["keyvalue"].astype("string").str.strip()
+        dup = k.notna() & (k != "") & k.duplicated()
+        if dup.any():
+            print(f"  removed {int(dup.sum()):,} rows that appear twice (same deal number)")
+        raw = raw[~dup].reset_index(drop=True)
+    return raw
 
 
 def clean(raw: pd.DataFrame) -> pd.DataFrame:
@@ -227,8 +235,9 @@ def clean(raw: pd.DataFrame) -> pd.DataFrame:
 
 # ----------------------------------------------------------------------------- time index
 
-def build_index(df: pd.DataFrame):
-    """Quarterly log price-per-sqm level per city (falls back to the national trend)."""
+def build_index(df: pd.DataFrame, col: str = "y"):
+    """Quarterly log level of `col` per city (falls back to the national trend).
+    col="y": raw median price per sqm.  col="_r": quality-adjusted (hedonic) residuals."""
     quarters = pd.period_range(df["q"].min(), df["q"].max(), freq="Q")
     vol = df.groupby("q").size().reindex(quarters, fill_value=0)
     # latest usable quarter: enough deals, and not the newest one (still being reported)
@@ -241,16 +250,73 @@ def build_index(df: pd.DataFrame):
         s = s.reindex(quarters).interpolate(limit_direction="both")
         return s.rolling(3, center=True, min_periods=1).mean()
 
-    national = smooth(df.groupby("q")["y"].median())
+    national = smooth(df.groupby("q")[col].median())
     idx = {}
     for city, grp in df.groupby("city"):
-        per_q = grp.groupby("q")["y"].agg(["median", "size"])
+        per_q = grp.groupby("q")[col].agg(["median", "size"])
         if len(grp) >= 400 and per_q["size"].median() >= 8:
             idx[city] = smooth(per_q["median"])
         else:  # follow national shape, shifted to the city's level
-            shift = (grp["y"] - national.reindex(grp["q"]).values).median()
+            shift = (grp[col] - national.reindex(grp["q"]).values).median()
             idx[city] = national + shift
     return idx, latest, quarters
+
+
+def hedonic_index(df, idx_raw, latest):
+    """Quality-adjusted index: the city's quarterly median of what the model can't explain by the
+    apartment and its street. Removes the effect of which apartments happened to sell each quarter.
+    The level is kept at the raw median price per sqm of the latest quarter."""
+    off = adjust_to_latest(df, idx_raw, latest)
+    X = features(df, df["date"].dt.year)
+    reg, ce, se, _ = fit(df, df["y"].values + off, X)
+    street = (df["city"] + "|" + df["street"]).values
+    df = df.assign(_r=df["y"].values - reg.predict(X) - se.reindex(street).fillna(0).values)
+    idx_h, _, _ = build_index(df, col="_r")
+    return {c: idx_h[c] + (idx_raw[c][latest] - idx_h[c][latest]) for c in idx_raw}
+
+
+def drop_street_outliers(df, idx, latest, k=4.0):
+    """Remove deals far from what similar apartments on the same street sold for
+    (partial-share sales, several units sold under one price, typos)."""
+    off = adjust_to_latest(df, idx, latest)
+    X = features(df, df["date"].dt.year)
+    y_adj = df["y"].values + off
+    reg, ce, se, _ = fit(df, y_adj, X)
+    resid = y_adj - predict(df, X, reg, ce, se)
+    med = np.median(resid)
+    mad = 1.4826 * np.median(np.abs(resid - med))
+    bad = np.abs(resid - med) > k * mad
+    print(f"  removed {int(bad.sum()):,} deals far from similar apartments on their street "
+          f"(more than {np.exp(k * mad) - 1:.0%} above or {1 - np.exp(-k * mad):.0%} below)")
+    return df[~bad].reset_index(drop=True)
+
+
+def compare_with_cbs(df, indexes: dict, latest):
+    """Print each index's change against the CBS district index over the period both cover."""
+    path = ROOT / "data" / "cbs_dwelling_index.csv"
+    if not path.exists():
+        return
+    cbs = pd.read_csv(path, encoding="utf-8-sig")
+    cbs["period"] = pd.PeriodIndex.from_fields(year=cbs["year"], month=cbs["month"], freq="M")
+    start_q = pd.Period(cbs["period"].min(), freq="M").asfreq("Q")
+    end_m = latest.asfreq("M", how="end")
+    w = df.groupby("city").size()
+    print(f"  check against CBS, change {start_q} to {latest}:")
+    print(f"    {'district':10s} {'CBS':>7s} " + " ".join(f"{k:>9s}" for k in indexes))
+    for dist, g in cbs.groupby("district"):
+        g = g.set_index("period")["value"].sort_index()
+        a, b = g[g.index >= start_q.asfreq("M", how="start")], g[g.index <= end_m]
+        if a.empty or b.empty:
+            continue
+        cbs_ch = b.iloc[-1] / a.iloc[0] - 1
+        cities = [c for c in w.index if CITY_DISTRICT.get(c, "ארצי") == dist] if dist != "ארצי" else list(w.index)
+        if not cities:
+            continue
+        vals = []
+        for name, idx in indexes.items():
+            ch = np.average([idx[c][latest] - idx[c][start_q] for c in cities], weights=w[cities])
+            vals.append(f"{(np.exp(ch) - 1) * 100:+8.1f}%")
+        print(f"    {dist:10s} {cbs_ch * 100:+6.1f}% " + " ".join(vals))
 
 
 def adjust_to_latest(df, idx, latest):
@@ -526,8 +592,13 @@ def main():
     print("1/4 loading")
     df = clean(load_raw(args.test))
     print("2/4 building price index")
-    idx, latest, _ = build_index(df)
-    print(f"  prices adjusted to {latest}")
+    idx_raw, latest, _ = build_index(df)
+    idx = hedonic_index(df, idx_raw, latest)
+    df = drop_street_outliers(df, idx, latest)
+    idx_raw, latest, _ = build_index(df)
+    idx = hedonic_index(df, idx_raw, latest)
+    print(f"  prices adjusted to {latest} (quality-adjusted index)")
+    compare_with_cbs(df, {"raw": idx_raw, "adjusted": idx}, latest)
     print("3/4 evaluating on held-out deals")
     metrics, quant = evaluate(df, idx, latest)
     for k, v in metrics.items():
