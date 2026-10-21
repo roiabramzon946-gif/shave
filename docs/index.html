@@ -219,6 +219,18 @@ body { position: relative; }
 .cadastre text { fill: currentColor; font-family: var(--num); text-anchor: middle; }
 .cadastre .no { font-size: 11px; opacity: .24; }
 .cadastre .blkno { font-size: 18px; opacity: .15; letter-spacing: .05em; }
+/* share-v1 */
+.share { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border-top: 1px dashed var(--rule); padding-top: 16px; }
+.share .lbl { font-weight: 600; margin-inline-end: 4px; }
+.share button, .share a { font: 600 .92rem var(--body); display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 9px 16px;
+  cursor: pointer; text-decoration: none; border: 1.5px solid var(--accent); color: var(--accent); background: var(--sheet);
+  transition: transform .18s var(--ease-spring), background-color .18s, color .18s; }
+.share a.wa { border-color: #1f7a4d; color: #1f7a4d; }
+.share button:hover, .share a:hover { transform: translateY(-2px) scale(1.04); background: var(--accent); color: var(--sheet); }
+.share a.wa:hover { background: #1f7a4d; color: #fff; }
+.share button:active, .share a:active { transform: scale(.96); transition-duration: .06s; }
+.share svg { width: 18px; height: 18px; flex: none; }
+.share .done { color: var(--good); font-size: .88rem; font-weight: 500; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
 </head>
@@ -314,6 +326,17 @@ body { position: relative; }
       <h2 id="mapTitle">מפת מחירי הרחובות</h2>
       <div class="map" id="map" role="img" aria-label="מפת הרחובות בעיר, צבועים לפי מחיר למ״ר"></div>
       <p class="hint" id="mapNote"></p>
+    </div>
+
+    <div class="share" id="share">
+      <span class="lbl">שתפו את הבדיקה</span>
+      <a class="wa" id="shareWa" href="#" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21l1.7-5A8.5 8.5 0 1 1 8 19.3L3 21z"/><path d="M9 10c.5 2 2 3.5 4 4l1.2-1.2 2 1-.4 1.6c-3 .4-6.8-3.4-6.4-6.4l1.6-.4 1 2L10 10.8"/></svg>
+        שליחה בוואטסאפ</a>
+      <button type="button" id="shareCopy">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>
+        העתקת קישור</button>
+      <span class="done" id="shareMsg" role="status"></span>
     </div>
 
     <div class="cta" id="cta" hidden>
@@ -418,6 +441,33 @@ const VERDICT = {
   very_high: ["יקר משמעותית", "המחיר המבוקש גבוה בהרבה ממה שדירות דומות נמכרו בו."],
 };
 
+/* share-v1: a link that reopens exactly this check */
+const SHARE_KEYS = { city: "city", street: "street", area: "a", rooms: "r", floor: "f", bfloors: "b", built: "y", asking: "p" };
+function shareQuery() {
+  const q = new URLSearchParams();
+  for (const [id, key] of Object.entries(SHARE_KEYS)) {
+    const v = $(id).value.trim().replace(/,/g, "");
+    if (v) q.set(key, v);
+  }
+  if ($("newStatus").value) q.set("n", $("newStatus").value);
+  if ($("type").value !== "regular") q.set("t", $("type").value);
+  return "?" + q.toString();
+}
+/* always share the live site's address, also when testing on this computer (localhost) */
+function shareLink() {
+  const canon = document.querySelector('link[rel="canonical"]');
+  const base = canon && /^https:\/\//.test(canon.href) ? canon.href.split("?")[0] : location.origin + location.pathname;
+  return base + shareQuery();
+}
+function updateShare(city, a, est, v) {
+  const link = shareLink();
+  try { history.replaceState(null, "", shareQuery()); } catch (err) { /* address bar is optional */ }
+  const where = city.name + (a.street ? ", " + a.street : "");
+  const text = `בדקתי דירה ב${where}: מבוקש ${ils(a.asking)}, שווי משוער ${ils(est.value)} (${VERDICT[v.level][0]}).\n${link}`;
+  $("shareWa").href = "https://wa.me/?text=" + encodeURIComponent(text);
+  $("shareMsg").textContent = "";
+}
+
 async function run(e) {
   if (e) e.preventDefault();
   $("formMsg").textContent = ""; $("formMsg").className = "hint";
@@ -508,6 +558,7 @@ function render(city, a, est, v) {
   drawTrend(city);
   drawMap(city, a);
   drawComps(Estimator.similarDeals(city, a, 8), a);
+  updateShare(city, a, est, v);
   if (CONFIG.reportUrl) { $("cta").hidden = false; $("ctaLink").href = CONFIG.reportUrl; }
 }
 
@@ -636,6 +687,11 @@ async function init() {
     e.target.value = digits ? nf.format(Number(digits)) : "";
   });
   $("form").addEventListener("submit", run);
+  $("shareCopy").addEventListener("click", async () => {
+    const link = shareLink();
+    try { await navigator.clipboard.writeText(link); $("shareMsg").textContent = "הקישור הועתק"; }
+    catch (err) { $("shareMsg").textContent = link; }
+  });
   ["floor", "bfloors"].forEach((id) => $(id).addEventListener("input", () => {
     if (!floorProblem() && $("formMsg").classList.contains("error")) { $("formMsg").textContent = ""; }
   }));
@@ -649,6 +705,17 @@ async function init() {
       $("city").value = pre.name;
       const pc = await getCity(pre); fillStreets(pc);
       if (qs.get("street") && pc.streets[qs.get("street")]) $("street").value = qs.get("street");
+      // a shared check: fill every field and run it
+      if (qs.get("p") && (qs.get("a") || qs.get("r"))) {
+        for (const [id, key] of Object.entries(SHARE_KEYS)) {
+          if (id === "city" || id === "street" || !qs.get(key)) continue;
+          $(id).value = id === "asking" ? nf.format(Number(qs.get(key).replace(/\D/g, "")) || 0) : qs.get(key).replace(/[^\d.]/g, "");
+        }
+        if (["", "ready", "presale"].includes(qs.get("n") || "")) $("newStatus").value = qs.get("n") || "";
+        if (["regular", "garden", "penthouse", "duplex"].includes(qs.get("t") || "")) $("type").value = qs.get("t") || "regular";
+        run();
+        return;
+      }
       $("area").focus();
       return;
     }
