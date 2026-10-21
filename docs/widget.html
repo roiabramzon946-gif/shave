@@ -71,6 +71,7 @@ input:focus, select:focus { outline: none; border-color: var(--brand); box-shado
 .stamp { display: inline-block; transform: rotate(-2deg); }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
 </style>
+<script data-goatcounter="https://shave.goatcounter.com/count" data-goatcounter-settings='{"allow_frame": true}' async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
 <div class="card" id="card">
@@ -144,6 +145,7 @@ function applySettings() {
   const brand = (P.get("brand") || "").slice(0, 60);
   if (P.get("title")) $("title").textContent = P.get("title").slice(0, 80);
   const contact = P.get("contact") || "";
+  $("contactLink").addEventListener("click", () => track("widget/contact", "פנייה למתווך"));
   if (brand && /^https:\/\//.test(contact)) {
     $("contactText").textContent = `רוצים הערכה מקצועית או ליווי בעסקה? ${brand} כאן בשבילכם.`;
     $("contactLink").textContent = "דברו איתנו";
@@ -182,6 +184,11 @@ function fillStreets(city) {
 const num = (id) => { const v = $(id).value.replace(/[^\d.]/g, ""); return v === "" ? null : Number(v); };
 function fail(m) { $("msg").textContent = m; reportHeight(); }
 
+/* stats-v1: count actions (GoatCounter; skips localhost) */
+function track(path, title) {
+  try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: path, title: title || path, event: true }); }
+  catch (err) { /* counting must never break the page */ }
+}
 async function run(e) {
   e && e.preventDefault();
   $("msg").textContent = "";
@@ -214,6 +221,7 @@ async function run(e) {
   const pct = Math.round(v.diff * 100);
   $("fDiff").textContent = (pct > 0 ? "+" : "") + pct + "%";
   $("contact").hidden = !$("contactLink").dataset.ok;
+  track("widget/check/" + c.name, "בדיקה בכלי המתווכים: " + c.name);
   reportHeight();
   try { parent.postMessage({ type: "shave-result", level: v.level }, "*"); } catch (err) {}
 }

@@ -233,6 +233,7 @@ body { position: relative; }
 .share .done { color: var(--good); font-size: .88rem; font-weight: 500; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
+<script data-goatcounter="https://shave.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
 <div class="cadastre" aria-hidden="true"></div>
@@ -441,6 +442,11 @@ const VERDICT = {
   very_high: ["יקר משמעותית", "המחיר המבוקש גבוה בהרבה ממה שדירות דומות נמכרו בו."],
 };
 
+/* stats-v1: count actions (GoatCounter; skips localhost) */
+function track(path, title) {
+  try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: path, title: title || path, event: true }); }
+  catch (err) { /* counting must never break the page */ }
+}
 /* share-v1: a link that reopens exactly this check */
 const SHARE_KEYS = { city: "city", street: "street", area: "a", rooms: "r", floor: "f", bfloors: "b", built: "y", asking: "p" };
 function shareQuery() {
@@ -470,6 +476,7 @@ function updateShare(city, a, est, v) {
 
 async function run(e) {
   if (e) e.preventDefault();
+  render.byUser = !!e;
   $("formMsg").textContent = ""; $("formMsg").className = "hint";
   const c = cityByName($("city").value);
   const a = readForm();
@@ -559,6 +566,8 @@ function render(city, a, est, v) {
   drawMap(city, a);
   drawComps(Estimator.similarDeals(city, a, 8), a);
   updateShare(city, a, est, v);
+  if (render.byUser) track("check/" + city.name, "בדיקת מחיר: " + city.name);
+  render.byUser = false;
   if (CONFIG.reportUrl) { $("cta").hidden = false; $("ctaLink").href = CONFIG.reportUrl; }
 }
 
@@ -687,7 +696,9 @@ async function init() {
     e.target.value = digits ? nf.format(Number(digits)) : "";
   });
   $("form").addEventListener("submit", run);
+  $("shareWa").addEventListener("click", () => track("share/whatsapp", "שיתוף בוואטסאפ"));
   $("shareCopy").addEventListener("click", async () => {
+    track("share/copy", "העתקת קישור");
     const link = shareLink();
     try { await navigator.clipboard.writeText(link); $("shareMsg").textContent = "הקישור הועתק"; }
     catch (err) { $("shareMsg").textContent = link; }
@@ -713,6 +724,7 @@ async function init() {
         }
         if (["", "ready", "presale"].includes(qs.get("n") || "")) $("newStatus").value = qs.get("n") || "";
         if (["regular", "garden", "penthouse", "duplex"].includes(qs.get("t") || "")) $("type").value = qs.get("t") || "regular";
+        track("share/opened", "פתיחת קישור ששותף");
         run();
         return;
       }

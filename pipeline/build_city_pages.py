@@ -197,6 +197,7 @@ def page(title, description, url, body, jsonld):
 <link rel="icon" href="{ICON}">
 {FONTS}
 <link rel="stylesheet" href="city.css">
+<script data-goatcounter="https://shave.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 <script type="application/ld+json">{json.dumps(jsonld, ensure_ascii=False)}</script>
 </head>
 <body>
